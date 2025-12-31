@@ -1,0 +1,141 @@
+/* Import global font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* --- TAILWIND DIRECTIVES --- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 🎯 SOLUSI SPASI: FORCE RESET PADA ELEMEN ROOT */
+html, body, #app {
+    /* Memastikan elemen mengisi 100% lebar dan tinggi */
+    width: 100%;
+    height: 100%; 
+    /* Menghilangkan margin dan padding bawaan browser (ini KUNCI UTAMA) */
+    margin: 0; 
+    padding: 0;
+}
+
+/* GLOBAL FONT + BASE BACKGROUND */
+body {
+  /* Mengganti warna Dark Mode agar konsisten dengan Login.vue */
+  @apply font-poppins text-gray-800 
+         dark:bg-[#2A3B30] 
+         dark:text-gray-200
+         transition-colors duration-300;
+  
+  font-family: "Poppins", sans-serif !important;
+  background-color: #f8f9fa; 
+}
+
+/* --- Tailwind Component Classes (Sisa kode Anda) --- */
+
+/* AUTH CARD */
+.auth-card {
+  @apply bg-white dark:bg-[#3B543D] p-8 rounded-2xl shadow-lg border 
+         border-gray-200 dark:border-white/10;
+}
+
+/* INPUT */
+.auth-input {
+  @apply w-full px-4 py-3 rounded-xl
+         bg-gray-100 dark:bg-white/5
+         border-2 border-gray-300 dark:border-white/10
+         text-gray-800 dark:text-gray-200
+         transition-all duration-200
+         focus:ring-2 focus:ring-army dark:focus:ring-army-light
+         focus:border-army dark:focus:border-army-light
+         outline-none;
+}
+
+/* BUTTON */
+.auth-btn {
+  @apply w-full bg-army text-white py-3 rounded-xl font-semibold
+         hover:bg-army-dark active:scale-[0.98]
+         shadow-md hover:shadow-lg;
+}
+
+/* LABEL */
+.auth-label {
+  @apply font-medium text-gray-700 dark:text-gray-300 mb-1 block;
+}
+
+/* SMALL HOVER FOR CARDS */
+.card-hover:hover {
+  transform: translateY(-4px);
+  transition: transform 0.2s ease;
+}
+
+/* Responsive Design for Mobile (Karyawan on Phone) */
+@media (max-width: 768px) {
+  .auth-card {
+    @apply p-6; 
+  }
+
+  .auth-input {
+    @apply px-3 py-2; 
+  }
+
+  .auth-btn {
+    @apply py-2; 
+  }
+}
+
+/* Adjust for larger screens (Admin) */
+@media (min-width: 769px) {
+  .auth-card {
+    @apply p-10; 
+  }
+
+  .auth-input {
+    @apply px-5 py-3; 
+  }
+
+  .auth-btn {
+    @apply py-4; 
+  }
+}
+
+/* Background Effects */
+.bg-gradient-to-b {
+  background: linear-gradient(180deg, rgba(35, 55, 54, 0.85), rgba(35, 55, 54, 1)); 
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stagger {
+  animation: fade-in 0.45s ease both;
+}
+
+.card-hover {
+  transition: transform 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+}
+
+.Toastify__toast {
+  font-size: 0.9rem;
+  border-radius: 8px;
+}
+
+.Toastify__toast--success {
+  background: #16a34a;
+  color: white;
+}
+
+.Toastify__toast--error {
+  background: #dc2626;
+  color: white;
+}
