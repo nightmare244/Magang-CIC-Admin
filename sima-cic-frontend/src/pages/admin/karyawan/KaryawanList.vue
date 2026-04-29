@@ -54,11 +54,14 @@
         </div>
 
         <div class="space-y-1">
-          <label class="kpi-label ml-1">Status Aktivasi</label>
+          <label class="kpi-label ml-1">Status Kerja</label>
           <select v-model="filterStatus" class="input-field-eco font-bold uppercase tracking-tighter">
             <option value="">Semua Status</option>
-            <option value="1">Aktif</option>
-            <option value="0">Non-Aktif</option>
+            <option value="Aktif">Aktif</option>
+            <option value="Permanent">Permanent</option>
+            <option value="Kontrak">Kontrak</option>
+            <option value="Harian">Harian</option>
+            <option value="Non-Aktif">Non-Aktif</option>
           </select>
         </div>
       </div>
@@ -86,7 +89,7 @@
               </th>
               <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">NIP & Email</th>
               <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Departemen</th>
-              <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
+              <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status Kerja</th>
               <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-40">Otoritas</th>
             </tr>
           </thead>
@@ -97,8 +100,9 @@
               </td>
               <td class="px-8 py-6">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-2xl bg-[#2d4a3e]/10 flex items-center justify-center text-[#2d4a3e] dark:text-emerald-500 font-bold mr-4 border border-[#2d4a3e]/10 group-hover:scale-110 shadow-sm uppercase">
-                        {{ karyawan.name.charAt(0) }}
+                    <div class="w-10 h-10 rounded-2xl bg-[#2d4a3e]/10 flex items-center justify-center text-[#2d4a3e] dark:text-emerald-500 font-bold mr-4 border border-[#2d4a3e]/10 group-hover:scale-110 shadow-sm uppercase overflow-hidden">
+                        <img v-if="karyawan.foto_profil" :src="`${BACKEND_URL}/storage/${karyawan.foto_profil}`" class="w-full h-full object-cover" />
+                        <span v-else>{{ karyawan.name.charAt(0) }}</span>
                     </div>
                     <span class="font-bold text-slate-800 dark:text-white">{{ karyawan.name }}</span>
                 </div>
@@ -113,8 +117,8 @@
                   </span>
               </td>
               <td class="px-8 py-6 text-center">
-                  <span :class="karyawan.is_active ? 'badge-active-eco' : 'badge-inactive-eco'">
-                      {{ karyawan.is_active ? 'Aktif' : 'Non-Aktif' }}
+                  <span :class="getStatusClass(karyawan.status_kerja)">
+                      {{ karyawan.status_kerja || 'Aktif' }}
                   </span>
               </td>
 
@@ -164,7 +168,7 @@
         </div>
     </div>
 
-    <ModalExport :isOpen="isExportModalOpen" @close="isExportModalOpen = false" :filters="{ departemen_id: filterDept, is_active: filterStatus }" />
+    <ModalExport :isOpen="isExportModalOpen" @close="isExportModalOpen = false" :filters="{ departemen_id: filterDept, status_kerja: filterStatus }" />
     <ModalImport :isOpen="isImportModalOpen" @close="isImportModalOpen = false" @success="fetchKaryawanList" />
     <DeleteModal :show="deleteId !== null" :id="deleteId" message="Hapus data personel secara permanen? Langkah ini tidak dapat dibatalkan." @close="deleteId = null" @confirm="deleteKaryawan" />
   </div>
@@ -201,6 +205,8 @@ const pageSize = 10;
 const sortKey = ref('name'); 
 const sortDir = ref('asc');
 
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const fetchKaryawanList = async () => {
   error.value = null;
   loading.value = true;
@@ -218,39 +224,61 @@ const fetchKaryawanList = async () => {
   }
 };
 
+const getStatusClass = (status) => {
+    const base = "px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter border shadow-sm ";
+    switch (status) {
+        case 'Aktif':
+        case 'Permanent':
+            return base + "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20";
+        case 'Kontrak':
+        case 'Harian':
+            return base + "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 border-blue-100 dark:border-blue-500/20";
+        case 'Non-Aktif':
+            return base + "bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 border-rose-100 dark:border-rose-500/20";
+        default:
+            return base + "bg-slate-50 text-slate-600 border-slate-100";
+    }
+};
+
+// --- FIX LOGIKA FILTER ---
 const filteredKaryawan = computed(() => {
     let filtered = [...karyawanList.value];
     const term = search.value.toLowerCase();
     
-    // Search Filter
+    // 1. Filter Pencarian
     if (term) {
         filtered = filtered.filter(k =>
-            k.name.toLowerCase().includes(term) ||
-            k.email.toLowerCase().includes(term) ||
-            k.nip.toLowerCase().includes(term)
+            (k.name && k.name.toLowerCase().includes(term)) ||
+            (k.email && k.email.toLowerCase().includes(term)) ||
+            (k.nip && k.nip.toLowerCase().includes(term))
         );
     }
 
-    // Departemen Filter
-    if (filterDept.value) {
+    // 2. Filter Departemen (Menggunakan == untuk bypass perbedaan String/Number)
+    if (filterDept.value !== "") {
         filtered = filtered.filter(k => k.departemen_id == filterDept.value);
     }
 
-    // Status Filter
+    // 3. Filter Status Kerja
     if (filterStatus.value !== "") {
-        filtered = filtered.filter(k => k.is_active == filterStatus.value);
+        filtered = filtered.filter(k => k.status_kerja === filterStatus.value);
     }
 
-    // Sort
+    // 4. Sorting
     const key = sortKey.value;
     const dir = sortDir.value === 'asc' ? 1 : -1;
     filtered.sort((a, b) => {
-        const aVal = a[key] || '';
-        const bVal = b[key] || '';
+        let aVal = a[key] || '';
+        let bVal = b[key] || '';
         return (String(aVal).localeCompare(String(bVal))) * dir;
     });
 
     return filtered;
+});
+
+// --- WATCHER UNTUK RESET PAGINATION ---
+watch([search, filterDept, filterStatus], () => { 
+    currentPage.value = 1; 
 });
 
 const totalPages = computed(() => Math.ceil(filteredKaryawan.value.length / pageSize));
@@ -297,7 +325,6 @@ const SortIcon = {
   setup() { return { ArrowUp, ArrowDown, ArrowUpDown }; }
 };
 
-watch([search, filterDept, filterStatus], () => { currentPage.value = 1; });
 onMounted(fetchKaryawanList);
 </script>
 
@@ -309,8 +336,6 @@ onMounted(fetchKaryawanList);
 .btn-refresh-eco { @apply inline-flex items-center px-6 py-3.5 bg-[#2d4a3e] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#2d4a3e]/20 hover:bg-[#385b4d] active:scale-95 transition-all; }
 .btn-back-eco { @apply inline-flex items-center px-6 py-3.5 bg-white dark:bg-[#1a1d19] border border-gray-100 dark:border-gray-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95; }
 .btn-action-eco { @apply p-2.5 rounded-xl transition-all duration-200 active:scale-90 flex items-center justify-center; }
-.badge-active-eco { @apply px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20 shadow-sm; }
-.badge-inactive-eco { @apply px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 border border-rose-100 dark:border-rose-500/20 shadow-sm; }
 .btn-pagination-eco { @apply p-3 bg-white dark:bg-[#121512] border border-gray-100 dark:border-gray-800 text-slate-400 rounded-xl hover:bg-[#2d4a3e] hover:text-white transition-all disabled:opacity-20; }
 .active-page { @apply bg-[#2d4a3e] text-white shadow-lg shadow-[#2d4a3e]/20; }
 .inactive-page { @apply bg-white dark:bg-white/5 text-slate-400 border border-gray-100 dark:border-gray-800 hover:bg-slate-50; }

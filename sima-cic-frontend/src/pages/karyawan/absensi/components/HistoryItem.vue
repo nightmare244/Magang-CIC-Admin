@@ -1,163 +1,128 @@
 <template>
-  <div class="card-container">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+  <div class="card-cic-wrapper animate-fade-in">
+    <div class="flex flex-col gap-4">
       
-      <!-- Tanggal & Status Hari -->
-      <div>
-        <h2 class="font-bold text-lg text-gray-900 dark:text-white">
+      <div class="flex justify-between items-start">
+        <div>
+          <h2 class="text-[14px] font-extrabold text-slate-800 dark:text-white leading-none">
             {{ formatDate(item.tanggal) }}
-        </h2>
-        
-        <div class="mt-1">
-            <span :class="['badge-status', badgeClass(item.status_hari)]" class="capitalize">
-                {{ item.status_hari || 'Belum Absen' }}
+          </h2>
+          <div class="mt-2">
+            <span :class="['badge-status-cic', badgeClass(item.status_hari)]">
+              {{ item.status_hari || 'Belum Absen' }}
             </span>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <div class="text-center bg-slate-50 dark:bg-white/5 px-3 py-2 rounded-2xl border border-slate-100 dark:border-white/5">
+            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Masuk</p>
+            <p :class="item.status_masuk === 'terlambat' ? 'text-rose-500' : 'text-emerald-500'" class="text-[12px] font-black">
+              {{ item.jam_masuk ?? "--:--" }}
+            </p>
+          </div>
+          <div class="text-center bg-slate-50 dark:bg-white/5 px-3 py-2 rounded-2xl border border-slate-100 dark:border-white/5">
+            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mb-1">Pulang</p>
+            <p class="text-[12px] font-black text-slate-800 dark:text-white">
+              {{ item.jam_pulang ?? "--:--" }}
+            </p>
+          </div>
         </div>
       </div>
 
-      <!-- Waktu Masuk/Pulang -->
-      <div class="text-left sm:text-right mt-3 sm:mt-0 space-y-1">
-        <p class="text-sm text-gray-700 dark:text-gray-300">
-          Masuk: 
-          <b :class="item.status_masuk === 'terlambat' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'">
-            {{ item.jam_masuk ?? "-" }}
-          </b>
-        </p>
-        <p class="text-sm text-gray-700 dark:text-gray-300">
-          Pulang: <b>{{ item.jam_pulang ?? "-" }}</b>
-        </p>
-      </div>
-    </div>
-
-    <!-- Foto Check-in/out -->
-    <div v-if="item.foto_checkin || item.foto_checkout" class="mt-4 pt-3 border-t dark:border-gray-700 flex gap-4">
-      
-      <!-- Foto Check-in -->
-      <div v-if="item.foto_checkin" class="flex flex-col items-center">
-        <img :src="imageUrl(item.foto_checkin)" class="img-thumb" alt="Check-in Photo" />
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Check-in</p>
+      <div v-if="item.foto_checkin || item.foto_checkout" class="flex gap-4 p-3 bg-slate-50 dark:bg-white/5 rounded-[1.5rem] border border-slate-100 dark:border-white/5">
+        <div v-if="item.foto_checkin" class="flex items-center gap-3 flex-1">
+          <img :src="imageUrl(item.foto_checkin)" class="img-thumb-cic" alt="In" />
+          <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Selfie<br>Masuk</p>
+        </div>
+        <div class="w-px bg-slate-200 dark:bg-white/10 my-1"></div>
+        <div v-if="item.foto_checkout" class="flex items-center gap-3 flex-1">
+          <img :src="imageUrl(item.foto_checkout)" class="img-thumb-cic" alt="Out" />
+          <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Selfie<br>Pulang</p>
+        </div>
       </div>
 
-      <!-- Foto Check-out -->
-      <div v-if="item.foto_checkout" class="flex flex-col items-center">
-        <img :src="imageUrl(item.foto_checkout)" class="img-thumb" alt="Check-out Photo" />
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Check-out</p>
-      </div>
-    </div>
-
-    <!-- ACTION BUTTONS -->
-    <div class="mt-4 pt-3 border-t dark:border-gray-700 flex justify-between items-center">
-        <!-- Tombol Detail -->
+      <div class="flex gap-3 pt-2">
         <router-link
           :to="`/karyawan/absensi/${item.id}`"
-          class="btn-detail"
+          class="flex-1 text-center py-3 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-xl text-[11px] font-bold border border-slate-200 dark:border-white/10 active:scale-95 transition-all shadow-sm"
         >
-          Lihat Detail
+          Rincian Detail
         </router-link>
         
-        <!-- Check-out Button (Hanya tampil jika sudah check-in dan belum check-out) -->
-        <div v-if="item.jam_masuk && !item.jam_pulang">
-            <button
-                @click="checkOut"
-                class="btn-checkout"
-            >
-                Check-out
-            </button>
-        </div>
-    </div>
+        <button
+          v-if="item.jam_masuk && !item.jam_pulang"
+          @click="checkOut"
+          class="flex-1 py-3 bg-[#1e332a] text-white rounded-xl text-[11px] font-bold shadow-lg shadow-emerald-900/20 active:scale-95 transition-all uppercase tracking-widest"
+        >
+          Check-out
+        </button>
+      </div>
 
+    </div>
   </div>
 </template>
 
 <script setup>
 import { defineProps, computed } from 'vue';
-import api from '@/services/api'; // Menggunakan API service yang benar
 
 const props = defineProps({
   item: { type: Object, required: true },
 });
 
-const emit = defineEmits(["checked-out"]);
-
-// Computed property untuk Base URL
 const baseUrl = computed(() => {
     const url = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
     return url.replace(/\/$/, ""); 
 });
 
-/**
- * Membangun URL Foto Selfie
- */
 const imageUrl = (path) => {
     if (!path) return '/default-user-avatar.png';
     const cleanPath = path.replace(/^\/storage\//i, '');
     return `${baseUrl.value}/storage/${cleanPath}`;
 };
 
-/**
- * Format Tanggal
- */
 function formatDate(dateString) {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    if (isNaN(date)) return dateString; 
-    return new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium' }).format(date);
+    return new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(date);
 }
 
-/**
- * Badge Class untuk Status Hari
- */
 function badgeClass(status) {
-    const lowerStatus = status ? status.toLowerCase() : '';
-    switch (lowerStatus) {
-        case 'hadir':
-            return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-        case 'terlambat':
-            return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-        case 'cuti':
-        case 'izin':
-        case 'sakit':
-            return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-        default:
-            return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-    }
+    const s = status ? status.toLowerCase() : '';
+    if (s === 'hadir') return 'badge-hadir';
+    if (s === 'terlambat') return 'badge-terlambat';
+    if (s === 'izin' || s === 'sakit' || s === 'cuti') return 'badge-izin';
+    return 'badge-default';
 }
 
-// =======================================================
-// LOGIC CHECKOUT (INTEGRASI DARI QUERY USER)
-// =======================================================
-const checkOut = async () => {
-    // Tombol Check-out Langsung dari Riwayat TIDAK BISA TANPA GPS/Selfie.
-    // Kita arahkan ke halaman utama absensi dengan pesan.
-    
-    if (!confirm("Anda akan diarahkan ke halaman Absensi untuk Check-out. Lanjutkan?")) {
-        return;
+const checkOut = () => {
+    if (confirm("Gunakan scanner untuk proses Check-out resmi. Lanjutkan ke halaman Absensi?")) {
+        window.location.href = '/karyawan/absensi';
     }
-    
-    // Asumsi rute utama absensi adalah /karyawan/absensi
-    // Karyawan harus mengisi QR, GPS, dan Selfie di halaman utama.
-    window.location.href = '/karyawan/absensi';
 };
 </script>
 
 <style scoped lang="postcss">
-.card-container {
-    @apply border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow-md bg-white dark:bg-[#1a1d19];
+.card-cic-wrapper {
+  @apply bg-white dark:bg-[#111311] p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 mb-4;
 }
 
-.badge-status {
-    @apply px-3 py-1 rounded-full text-xs font-semibold inline-block;
+.badge-status-cic {
+  @apply px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border border-transparent inline-block;
 }
 
-.img-thumb {
-    @apply w-20 h-20 rounded-lg object-cover shadow-sm border border-gray-300 dark:border-gray-700;
+.badge-hadir { @apply bg-emerald-500 text-white; }
+.badge-terlambat { @apply bg-rose-500 text-white; }
+.badge-izin { @apply bg-sky-500 text-white; }
+.badge-default { @apply bg-slate-400 text-white; }
+
+.img-thumb-cic {
+  @apply w-12 h-12 rounded-2xl object-cover shadow-sm border-2 border-white dark:border-white/10;
 }
 
-.btn-detail {
-    @apply inline-block bg-blue-600 text-white px-3 py-1 rounded-lg text-sm font-medium
-           hover:bg-blue-700 transition shadow-sm;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-.btn-checkout {
-    @apply px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition shadow-md;
-}
+.animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
 </style>

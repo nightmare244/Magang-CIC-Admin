@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Api\Karyawan;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Models\{Absensi, Izin, User, PeminjamanInventaris};
+use App\Models\{Absensi, Izin, User, PeminjamanInventaris, Setting};
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
 
 class DashboardKaryawanController extends Controller
 {
@@ -17,106 +16,98 @@ class DashboardKaryawanController extends Controller
             $user = User::with('departemen')->find(Auth::id());
             if (!$user) return response()->json(['success' => false], 401);
 
-            $today = Carbon::today()->toDateString();
-            $startOfMonth = Carbon::now()->startOfMonth()->toDateString();
-            $endOfMonth = Carbon::now()->endOfMonth()->toDateString();
+            $today = Carbon::today();
+            
+            // --- 1. CONFIG JAM ---
+            $configJamMasuk = Setting::getByKey('jam_masuk_kantor', '08:00:00');
 
-            // --- 1. ABSENSI HARI INI ---
-            $absen = Absensi::where('user_id', $user->id)
-                ->where('tanggal', $today)
+            // --- 2. ABSENSI HARI INI ---
+            $absenToday = Absensi::where('user_id', $user->id)
+                ->whereDate('tanggal', $today)
                 ->first();
 
-            $absensiToday = [
-                'jam_masuk'    => $absen ? $absen->jam_masuk : null,
-                'jam_pulang'   => $absen ? $absen->jam_pulang : null,
-                'status_masuk' => $absen ? $absen->status_masuk : null,
+            $absensiSummaryToday = [
+                'jam_masuk'    => $absenToday ? $absenToday->jam_masuk : null,
+                'jam_pulang'   => $absenToday ? $absenToday->jam_pulang : null,
+                'status_masuk' => $absenToday ? strtoupper(str_replace('_', ' ', $absenToday->status_masuk)) : '-', 
+                'status_hari'  => $absenToday ? strtoupper($absenToday->status_hari) : 'BELUM ABSEN',
             ];
 
-           // --- 2. KPI: KEHADIRAN & DISIPLIN (PERBAIKAN TOTAL) ---
-
-// Pastikan format tanggal start dan end bulan ini benar
-$startOfMonth = Carbon::now()->startOfMonth()->format('Y-m-d');
-$endOfMonth = Carbon::now()->endOfMonth()->format('Y-m-d');
-
-// Ambil data absensi bulan ini
-$absensiBulanIni = Absensi::where('user_id', $user->id)
-    ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
-    ->get();
-
-// DEBUG: Pastikan data ditemukan (Cek di Log Laravel jika masih kosong)
-if ($absensiBulanIni->isEmpty()) {
-    \Log::info("Data absen tidak ditemukan untuk User: {$user->id} antara {$startOfMonth} - {$endOfMonth}");
-}
-
-// Menghitung kehadiran menggunakan filter agar lebih akurat terhadap spasi
-$totalHadir = $absensiBulanIni->filter(function($item) {
-    return in_array(strtoupper(trim($item->status_hari)), ['HADIR', 'H']);
-})->count();
-
-$totalAlpa = $absensiBulanIni->filter(function($item) {
-    return strtoupper(trim($item->status_hari)) === 'ALPA';
-})->count();
-
-// Logika Skor Disiplin
-$skorDisiplin = 0;
-if ($totalHadir > 0) {
-    $totalPoin = 0;
-    foreach ($absensiBulanIni as $item) {
-        $statusHarian = strtoupper(trim($item->status_hari));
-        // Hilangkan spasi dan underscore untuk pengecekan status masuk
-        $statusMasuk = strtolower(str_replace([' ', '_'], '', $item->status_masuk));
-
-        if ($statusHarian === 'HADIR' || $statusHarian === 'H') {
-            if ($statusMasuk === 'tepatwaktu') {
-                $totalPoin += 100;
-            } elseif ($statusMasuk === 'terlambat') {
-                $totalPoin += 60; // Memberikan poin 60 meskipun terlambat
-            }
-        }
-    }
-    // Skor dibagi target bulanan tetap (26 hari)
-    $skorDisiplin = round($totalPoin / 26);
-}
-
-$skorDisiplin = max(0, min(100, (int)$skorDisiplin));
-
-            // --- 3. LOGISTIK ---
-            $barangDipinjam = PeminjamanInventaris::where('user_id', $user->id)
+            // --- 3. LOGIKA IZIN AKTIF ---
+            $izinAktif = Izin::where('user_id', $user->id)
                 ->where('status', 'disetujui')
-                ->whereNull('tanggal_pengembalian') 
-                ->sum('quantity');
+                ->whereDate('tanggal_mulai', '<=', $today)
+                ->whereDate('tanggal_selesai', '>=', $today)
+                ->first();
 
-            // --- 4. RIWAYAT CHART ---
-            $riwayat = Absensi::where('user_id', $user->id)
-                ->orderBy('tanggal', 'desc')
-                ->take(7)
-                ->get()
-                ->reverse()
-                ->values()
-                ->map(fn($item) => [
-                    'tanggal' => Carbon::parse($item->tanggal)->format('d M'),
-                    'total'   => $item->jam_masuk ? 1 : 0,
-                ]);
+            // --- 4. LOGIKA PEMINJAMAN AKTIF (MEMANGGIL RELASI 'barang') ---
+            $peminjamanAktif = PeminjamanInventaris::with('barang') 
+                ->where('user_id', $user->id)
+                ->where('status', 'disetujui')
+                ->whereNull('tanggal_pengembalian')
+                ->latest()
+                ->get(); // Mengirim Array ke Vue
+
+            // --- 5. DATA BULAN INI UNTUK KPI ---
+            $absensiBulanIni = Absensi::where('user_id', $user->id)
+                ->whereMonth('tanggal', Carbon::now()->month)
+                ->whereYear('tanggal', Carbon::now()->year)
+                ->get();
+
+            $totalHadir = $absensiBulanIni->where('status_hari', 'HADIR')->count();
+            $totalAlpa  = $absensiBulanIni->where('status_hari', 'ALPA')->count();
+
+            // --- 6. SKOR DISIPLIN ---
+            $skorDisiplin = 0;
+            $dataAbsenMasuk = $absensiBulanIni->whereNotNull('jam_masuk');
+            
+            if ($dataAbsenMasuk->count() > 0) {
+                $totalPoin = 0;
+                foreach ($dataAbsenMasuk as $item) {
+                    if (str_contains(strtolower($item->status_masuk ?? ''), 'tepat')) {
+                        $totalPoin += 100;
+                    } elseif ($item->status_hari === 'HADIR') {
+                        $totalPoin += 60;
+                    }
+                }
+                $skorDisiplin = ($totalHadir + $totalAlpa) > 0 ? round($totalPoin / ($totalHadir + $totalAlpa)) : 0;
+            }
+
+            // --- 7. RIWAYAT CHART ---
+            $riwayatChart = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $date = Carbon::today()->subDays($i);
+                $dayData = Absensi::where('user_id', $user->id)->whereDate('tanggal', $date->toDateString())->first();
+                $riwayatChart[] = [
+                    'tanggal' => $date->format('d M'),
+                    'total'   => ($dayData && $dayData->status_hari === 'HADIR') ? 1 : 0,
+                ];
+            }
 
             return response()->json([
                 'success' => true,
                 'user'    => $user,
                 'summary' => [
-                    'absensi_today' => $absensiToday,
-                    'chart_7_hari'  => $riwayat,
+                    'absensi_today'    => $absensiSummaryToday,
+                    'izin_aktif'       => $izinAktif,
+                    'peminjaman_aktif' => $peminjamanAktif,
+                    'chart_7_hari'     => $riwayatChart,
                     'kpi' => [
-                        'skor_disiplin'   => $skorDisiplin,
-                        'total_hadir'     => $totalHadir,
-                        'total_alpa'      => $totalAlpa,
+                        'skor_disiplin'   => (int) $skorDisiplin,
+                        'total_hadir'     => (int) $totalHadir,
+                        'total_alpa'      => (int) $totalAlpa,
                         'target_hari'     => 26,
-                        'barang_dipinjam' => (int) $barangDipinjam,
+                        'barang_dipinjam' => $peminjamanAktif->count(), 
                     ]
                 ]
             ]);
 
         } catch (\Exception $e) {
             Log::error("Dashboard Error: " . $e->getMessage());
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false, 
+                'error'   => $e->getMessage()
+            ], 500);
         }
     }
 }

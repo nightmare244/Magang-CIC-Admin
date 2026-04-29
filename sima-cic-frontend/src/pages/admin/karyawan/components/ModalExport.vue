@@ -58,19 +58,33 @@ const isProcessing = ref(false);
 
 const closeModal = () => { if (!isProcessing.value) emit('close'); };
 
+// Contoh jika filter dikirim melalui props atau diambil dari state pencarian
 const handleExport = async () => {
   isProcessing.value = true;
   try {
-    const response = await api.get('/admin/karyawan/export', { responseType: 'blob' });
+    // Ambil nilai filter dari komponen utama (misal dari state pencarian Anda)
+    // Sesuaikan parameter ini dengan nama variabel filter di Dashboard Anda
+    const params = {
+      departemen_id: props.filterDepartemen || '', 
+      status_kerja: props.filterStatus || ''
+    };
+
+    const response = await api.get('/admin/karyawan/export', { 
+      params: params, // Parameter dikirim ke backend
+      responseType: 'blob' 
+    });
+
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `DATA_KARYAWAN_CIC_${new Date().toISOString().slice(0,10)}.xlsx`);
+    link.setAttribute('download', `DATA_KARYAWAN_FILTERED_${new Date().toISOString().slice(0,10)}.xlsx`);
     document.body.appendChild(link);
     link.click();
+    
     emit('close');
   } catch (error) {
     console.error("Export Error:", error);
+    alert("Gagal mengekspor data.");
   } finally {
     isProcessing.value = false;
   }

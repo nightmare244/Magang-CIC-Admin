@@ -225,7 +225,11 @@ const totalHadir = computed(() => {
 
 const countStatus = (status) => {
   return reportData.value.filter(item => {
-    if (status === 'ALPA') return item.status_hari === 'ALPA';
+    // Jika mencari ALPA, cek apakah status_masuk mengandung kata ALPA atau status_hari memang ALPA
+    if (status === 'ALPA') {
+      return (item.status_hari === 'ALPA' || (item.status_masuk && item.status_masuk.includes('ALPA')));
+    }
+    // Jika mencari Tepat Waktu / Terlambat
     return item.status_masuk === status;
   }).length;
 };

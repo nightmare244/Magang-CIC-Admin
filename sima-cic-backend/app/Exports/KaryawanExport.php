@@ -18,10 +18,29 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithEvents
 {
     private $rowNumber = 0;
+    protected $request;
+
+    // Terima request filter dari Controller
+    public function __construct($request)
+    {
+        $this->request = $request;
+    }
 
     public function collection()
     {
-        return User::with('departemen')->where('role', 'karyawan')->get();
+        $query = User::with('departemen')->where('role', 'karyawan');
+
+        // Filter berdasarkan Departemen jika ada
+        if ($this->request->has('departemen_id') && $this->request->departemen_id != '') {
+            $query->where('departemen_id', $this->request->departemen_id);
+        }
+
+        // Filter berdasarkan Status Kerja jika ada
+        if ($this->request->has('status_kerja') && $this->request->status_kerja != '') {
+            $query->where('status_kerja', $this->request->status_kerja);
+        }
+
+        return $query->latest()->get();
     }
 
     public function headings(): array
@@ -32,12 +51,12 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
             'Email',
             'NIP',
             'Departemen',
+            'Status Kerja', // Tambahan agar jelas di laporan
             'Tempat Lahir',
             'Tanggal Lahir',
             'Jenis Kelamin',
             'Nomor HP',
-            'Alamat',
-            'Status'
+            'Alamat'
         ];
     }
 
@@ -51,22 +70,18 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
             $user->email,
             $user->nip,
             $user->departemen->nama_departemen ?? '-',
+            $user->status_kerja, // Menampilkan status kerja (Kontrak/Permanent dll)
             $user->tempat_lahir,
-            $user->tanggal_lahir ? $user->tanggal_lahir->format('Y-m-d') : '-',
+            $user->tanggal_lahir ? (\Carbon\Carbon::parse($user->tanggal_lahir)->format('Y-m-d')) : '-',
             $user->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan',
             $user->nomor_hp ?? '-',
             $user->alamat ?? '-',
-            $user->is_active ? 'Aktif' : 'Non-Aktif',
         ];
     }
 
-    /**
-     * Mengatur style dasar (Header)
-     */
     public function styles(Worksheet $sheet)
     {
         return [
-            // Style untuk Baris 1 (Header)
             1 => [
                 'font' => [
                     'bold' => true, 
@@ -75,7 +90,7 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
                 ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '2D4A3E'], // Warna Hijau CIC
+                    'startColor' => ['rgb' => '2D4A3E'],
                 ],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -85,17 +100,13 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
         ];
     }
 
-    /**
-     * Mengatur style lanjutan (Border, Alignment Baris)
-     */
     public function registerEvents(): array
     {
         return [
             AfterSheet::class => function(AfterSheet $event) {
-                $lastRow = $this->rowNumber + 1; // +1 karena ada header
+                $lastRow = $this->rowNumber + 1;
                 $range = 'A1:K' . $lastRow;
 
-                // 1. Terapkan Border ke seluruh sel yang ada datanya
                 $event->sheet->getStyle($range)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
@@ -105,15 +116,13 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping, WithS
                     ],
                 ]);
 
-                // 2. Center alignment untuk kolom tertentu (No, NIP, Tgl Lahir, Jenis Kelamin, Status)
-                $centeredColumns = ['A', 'D', 'G', 'H', 'K'];
+                $centeredColumns = ['A', 'D', 'F', 'H', 'I'];
                 foreach ($centeredColumns as $col) {
                     $event->sheet->getStyle($col . '2:' . $col . $lastRow)
                         ->getAlignment()
                         ->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 }
 
-                // 3. Mengatur tinggi baris header
                 $event->sheet->getDelegate()->getRowDimension('1')->setRowHeight(30);
             },
         ];

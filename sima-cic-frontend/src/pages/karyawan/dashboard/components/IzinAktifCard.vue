@@ -1,66 +1,65 @@
 <template>
   <div v-if="izin" 
     @click="goToDetail"
-    class="bg-white dark:bg-[#121512] rounded-[2rem] p-5 shadow-lg border border-sky-50 dark:border-sky-900/20 relative overflow-hidden transition-all active:scale-[0.98] cursor-pointer group"
+    class="bg-white dark:bg-[#111311] rounded-[1.5rem] p-5 shadow-sm border border-slate-100 dark:border-white/5 relative overflow-hidden transition-all active:scale-[0.98] cursor-pointer group"
   >
-    <div class="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-10 transition-opacity">
-      <CalendarRange class="w-24 h-24 text-sky-600" />
+    <div class="absolute -right-4 -top-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-700 pointer-events-none">
+      <CalendarRange class="w-24 h-24 text-emerald-600" />
     </div>
 
     <div class="relative z-10">
-      <div class="flex items-center justify-between mb-4 px-1">
-        <h2 class="text-xs font-bold text-sky-700 dark:text-sky-400">Status Izin Aktif</h2>
-        <div class="px-2.5 py-0.5 bg-sky-50 dark:bg-sky-900/30 rounded-full border border-sky-100 dark:border-sky-800/30">
-          <span class="text-[9px] font-bold text-sky-600 dark:text-sky-300">Terverifikasi</span>
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+          <h2 class="text-xs font-semibold text-slate-600 dark:text-emerald-400">Agenda aktif</h2>
+        </div>
+        <div class="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg">
+          <span class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">Disetujui</span>
         </div>
       </div>
 
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-sky-500 rounded-2xl flex items-center justify-center text-white shadow-md shadow-sky-500/20 flex-shrink-0 group-hover:scale-110 transition-transform duration-500">
-          <Plane v-if="izin.tipe_izin?.toLowerCase().includes('cuti')" class="w-5 h-5" />
-          <Stethoscope v-else-if="izin.tipe_izin?.toLowerCase().includes('sakit')" class="w-5 h-5" />
-          <FileText v-else class="w-5 h-5" />
+        <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-600 flex-shrink-0 transition-transform duration-500">
+          <Plane v-if="izin.tipe_izin?.toLowerCase().includes('cuti')" class="w-6 h-6" />
+          <Stethoscope v-else-if="izin.tipe_izin?.toLowerCase().includes('sakit')" class="w-6 h-6" />
+          <FileText v-else class="w-6 h-6" />
         </div>
 
         <div class="flex-1 overflow-hidden">
           <h3 class="text-base font-bold text-slate-800 dark:text-white capitalize leading-tight">
-            {{ izin.tipe_izin || 'Izin Umum' }}
+            {{ izin.tipe_izin || 'Izin umum' }}
           </h3>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 italic truncate font-medium">
-            "{{ izin.keterangan || 'Tanpa keterangan' }}"
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate font-normal">
+            {{ izin.keterangan || 'Tanpa keterangan tambahan' }}
           </p>
         </div>
       </div>
 
-      <div class="mt-5 p-3.5 bg-sky-50/50 dark:bg-white/5 rounded-2xl border border-sky-100 dark:border-white/5 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <CalendarDays class="w-4 h-4 text-sky-500 opacity-70" />
-          <div>
-            <p class="text-[9px] font-medium text-slate-400">Berlaku sampai</p>
-            <p class="text-[11px] font-bold text-slate-700 dark:text-slate-200 uppercase">
+      <div class="mt-5 pt-4 border-t border-slate-50 dark:border-white/5 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <CalendarDays class="w-4 h-4 text-slate-400" />
+          <div class="flex flex-col">
+            <span class="text-[10px] text-slate-400">Berakhir pada</span>
+            <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">
               {{ formatDate(izin.tanggal_selesai) }}
-            </p>
+            </span>
           </div>
         </div>
         
-        <router-link 
-          :to="`/karyawan/izin/${izin.id}`" 
-          class="text-sky-600 dark:text-sky-400 p-2 hover:bg-sky-100 dark:hover:bg-white/10 rounded-xl transition-colors"
-          @click.stop
-        >
-          <ArrowUpRight class="w-4 h-4" />
-        </router-link>
+        <div class="text-emerald-600 dark:text-emerald-400">
+          <ArrowUpRight class="w-5 h-5" />
+        </div>
       </div>
     </div>
   </div>
 
-  <div v-else class="bg-white dark:bg-[#121512] rounded-[2rem] p-8 text-center shadow-md border border-dashed border-slate-200 dark:border-white/10 transition-all">
-    <div class="w-14 h-14 bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
-      <Trees class="w-7 h-7 text-slate-200" />
+  <div v-else class="bg-white dark:bg-[#111311] rounded-[1.5rem] p-6 text-center border border-slate-100 dark:border-white/5 shadow-sm">
+    <div class="w-12 h-12 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3">
+      <Trees class="w-6 h-6 text-slate-300 dark:text-slate-600" />
     </div>
-    <p class="text-sm font-bold text-slate-700 dark:text-slate-300">Semua Terjadwal</p>
-    <p class="text-[11px] text-slate-400 mt-1.5 italic font-medium leading-relaxed px-4">
-      Tidak ada agenda izin aktif saat ini.
+    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">Semua terkendali</h3>
+    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 px-4">
+      Kamu tidak memiliki agenda izin atau cuti aktif hari ini.
     </p>
   </div>
 </template>
@@ -81,26 +80,18 @@ const props = defineProps({
 
 const router = useRouter();
 
-/**
- * Navigasi ke Detail:
- * Mengarahkan user ke rute detail izin spesifik
- */
 const goToDetail = () => {
   if (props.izin?.id) {
     router.push(`/karyawan/izin/${props.izin.id}`);
   }
 };
 
-/**
- * Pembersihan Format Tanggal:
- * Menghilangkan waktu (00:00:00) agar tampilan lebih bersih
- */
 const formatDate = (dateString) => {
   if (!dateString) return '-';
   const date = new Date(dateString);
   return date.toLocaleDateString('id-ID', {
-    day: '2-digit',
-    month: 'short',
+    day: 'numeric',
+    month: 'long',
     year: 'numeric'
   });
 };

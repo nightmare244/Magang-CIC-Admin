@@ -30,7 +30,7 @@ class User extends Authenticatable
         'foto_profil', 
         'departemen_id',
         'role', 
-        'is_active',
+        'status_kerja', // REVISI: Menggantikan is_active
     ];
 
     /**
@@ -42,16 +42,13 @@ class User extends Authenticatable
     ];
 
     /**
-     * PERBAIKAN STRATEGIS: 
-     * Menggunakan format 'date:Y-m-d' memastikan data yang dikirim ke Vue 
-     * adalah string murni. Ini mencegah browser menarik mundur tanggal 
-     * akibat perbedaan zona waktu (WIB vs UTC).
+     * Atribut casting untuk konsistensi data.
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'tanggal_lahir' => 'date:Y-m-d', 
-        'is_active' => 'boolean',
+        // REVISI: is_active boolean dihapus karena sekarang menggunakan string status_kerja
     ];
 
     /**
@@ -64,17 +61,14 @@ class User extends Authenticatable
 
     /**
      * ACCESSOR: Foto Profil URL
-     * Menghasilkan URL lengkap untuk ditampilkan di tag <img> pada Vue.
      */
     protected function fotoProfilUrl(): Attribute
     {
         return Attribute::make(
             get: function () {
                 if ($this->foto_profil) {
-                    // Mengambil file dari folder storage/public
                     return asset('storage/' . $this->foto_profil);
                 }
-                // Gambar default jika foto tidak ada
                 return asset('img/default-user.png');
             }
         );
@@ -82,7 +76,6 @@ class User extends Authenticatable
 
     /**
      * ACCESSOR: Label Jenis Kelamin
-     * Mengubah inisial L/P menjadi teks lengkap.
      */
     public function jenisKelaminLengkap(): Attribute
     {
@@ -93,36 +86,23 @@ class User extends Authenticatable
 
     /* ==========================================================================
     RELASI DATABASE
-    ==========================================================================
-    */
+    ========================================================================== */
 
-    /**
-     * Relasi ke tabel Departemen.
-     */
     public function departemen(): BelongsTo
     {
         return $this->belongsTo(Departemen::class);
     }
 
-    /**
-     * Relasi ke data Absensi.
-     */
     public function absensis(): HasMany
     {
         return $this->hasMany(Absensi::class);
     }
 
-    /**
-     * Relasi ke data Izin.
-     */
     public function izins(): HasMany
     {
         return $this->hasMany(Izin::class);
     }
 
-    /**
-     * Relasi ke data Peminjaman Inventaris.
-     */
     public function peminjamanInventaris(): HasMany
     {
         return $this->hasMany(PeminjamanInventaris::class);

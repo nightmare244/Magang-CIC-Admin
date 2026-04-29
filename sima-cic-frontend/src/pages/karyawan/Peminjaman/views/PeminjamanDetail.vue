@@ -1,113 +1,131 @@
 <template>
-  <div class="min-h-screen bg-[#F9FBFC] dark:bg-[#0a0c0a] font-poppins pb-32 overflow-x-hidden">
-    <header class="bg-[#2d4a3e] pt-16 pb-28 px-8 rounded-b-[4rem] shadow-2xl text-white relative overflow-hidden">
-      <div class="absolute -right-10 -top-10 w-64 h-64 bg-emerald-500/20 rounded-full blur-[80px]"></div>
-      <div class="relative z-10 flex items-center justify-between">
-        <button @click="$router.back()" class="w-12 h-12 flex items-center justify-center bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-inner active:scale-90 transition-all">
-          <ChevronLeft class="w-6 h-6" />
-        </button>
-        <h1 class="text-xl font-bold tracking-tight">Detail Pinjaman</h1>
-        <div class="w-12"></div>
+  <div class="min-h-screen bg-slate-50 dark:bg-[#080908] font-poppins pb-32 transition-colors duration-500 overflow-x-hidden">
+    
+    <header class="relative pt-14 pb-24 px-6 overflow-hidden">
+      <div 
+        class="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat scale-110"
+        style="background-image: url('/images/background.jpg'); filter: blur(1px);" 
+      ></div>
+      <div class="absolute inset-0 z-10 bg-gradient-to-br from-[#1e332a]/95 via-[#1e332a]/85 to-[#1e332a]/40 dark:from-[#0a0f0d]/98 dark:via-[#0a0f0d]/90 dark:to-transparent"></div>
+      
+      <div class="relative z-20 max-w-md mx-auto">
+        <div class="flex items-center gap-4">
+          <button 
+            @click="$router.back()" 
+            class="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl text-white active:scale-90 transition-all"
+          >
+            <ChevronLeft class="w-6 h-6" />
+          </button>
+
+          <div>
+            <p class="text-[10px] font-medium text-emerald-400/90 leading-none mb-1 capitalize tracking-[0.2em]">Inventaris Sistem</p>
+            <h1 class="text-xl font-bold tracking-tight text-white capitalize">Detail Pinjaman Barang</h1>
+          </div>
+        </div>
       </div>
     </header>
 
-    <div class="max-w-md mx-auto px-6 -mt-16 relative z-20 space-y-6">
-      <div v-if="loading" class="bg-white dark:bg-[#121512] rounded-[3rem] p-20 text-center shadow-xl border border-white dark:border-white/5 animate-pulse">
-        <Loader2 class="w-10 h-10 animate-spin mx-auto text-emerald-500 mb-4" />
+    <div class="max-w-md mx-auto px-6 -mt-10 relative z-30 space-y-6">
+      
+      <div v-if="loading" class="bg-white dark:bg-[#111311] rounded-[2.5rem] p-12 text-center shadow-sm border border-slate-100 dark:border-white/5">
+        <div class="w-10 h-10 border-4 border-emerald-500/10 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sinkronisasi Data...</p>
       </div>
 
-      <div v-else-if="detail" class="animate-fade-in-up space-y-6">
-        <div v-if="detail.status === 'disetujui'" class="bg-[#2d4a3e] text-white rounded-[2.5rem] p-7 shadow-xl relative overflow-hidden border border-white/10">
+      <template v-else-if="detail">
+        <div v-if="detail.status === 'disetujui'" class="bg-[#1e332a] text-white rounded-[2.5rem] p-7 shadow-xl relative overflow-hidden border border-white/10 animate-fade-in-up">
           <div class="absolute right-0 top-0 opacity-10">
             <Clock class="w-24 h-24 -mr-4 -mt-4" />
           </div>
-          <p class="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300 mb-4">Masa Pakai Aset Aktif</p>
-          <div class="flex gap-5 items-center">
-             <div class="text-center">
-               <span class="text-3xl font-black block tracking-tighter">{{ countdown.days }}</span>
-               <span class="text-[8px] uppercase font-bold opacity-60 tracking-widest">Hari</span>
-             </div>
-             <span class="text-xl opacity-30 font-light">:</span>
-             <div class="text-center">
-               <span class="text-3xl font-black block tracking-tighter">{{ countdown.hours }}</span>
-               <span class="text-[8px] uppercase font-bold opacity-60 tracking-widest">Jam</span>
-             </div>
-             <span class="text-xl opacity-30 font-light">:</span>
-             <div class="text-center">
-               <span class="text-3xl font-black block tracking-tighter">{{ countdown.minutes }}</span>
-               <span class="text-[8px] uppercase font-bold opacity-60 tracking-widest">Menit</span>
-             </div>
+          <p class="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-400 mb-4">Masa Pakai Aset Aktif</p>
+          <div class="flex gap-5 items-center relative z-10">
+              <div class="text-center">
+                <span class="text-3xl font-black block tracking-tighter">{{ countdown.days }}</span>
+                <span class="text-[8px] uppercase font-black opacity-40 tracking-widest">Hari</span>
+              </div>
+              <span class="text-xl opacity-20 font-light">:</span>
+              <div class="text-center">
+                <span class="text-3xl font-black block tracking-tighter">{{ countdown.hours }}</span>
+                <span class="text-[8px] uppercase font-black opacity-40 tracking-widest">Jam</span>
+              </div>
+              <span class="text-xl opacity-20 font-light">:</span>
+              <div class="text-center">
+                <span class="text-3xl font-black block tracking-tighter">{{ countdown.minutes }}</span>
+                <span class="text-[8px] uppercase font-black opacity-40 tracking-widest">Menit</span>
+              </div>
           </div>
         </div>
 
-        <div class="bg-white dark:bg-[#121512] rounded-[2.5rem] p-6 shadow-xl flex items-center justify-between border border-white dark:border-white/5">
-           <div>
-             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Status Administrasi</p>
-             <span :class="statusClass(detail.status)" class="text-[10px] font-black px-4 py-2 rounded-xl border uppercase tracking-widest shadow-sm">
-               {{ detail.status }}
-             </span>
-           </div>
-           <div class="w-12 h-12 bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center justify-center">
-             <Package class="w-6 h-6 text-slate-300 dark:text-slate-600" />
-           </div>
-        </div>
-
-        <div class="bg-white dark:bg-[#121512] rounded-[3rem] p-8 shadow-xl border border-white dark:border-white/5 space-y-6">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-1.5 h-4 bg-emerald-500 rounded-full"></div>
-            <h3 class="text-[10px] font-black text-slate-800 dark:text-white uppercase tracking-[0.2em]">Logistik Aset</h3>
-          </div>
+        <div class="bg-white dark:bg-[#111311] rounded-[2.5rem] p-5 shadow-sm border border-slate-100 dark:border-white/5 space-y-5 animate-fade-in-up">
           
-          <div class="flex items-center gap-5 border-b border-slate-50 dark:border-white/5 pb-6">
-             <div class="w-20 h-20 bg-slate-100 dark:bg-white/5 rounded-3xl overflow-hidden flex-shrink-0 shadow-inner border border-slate-100 dark:border-white/10">
-               <img :src="getPhotoUrl(detail.inventaris?.foto_barang)" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110" @error="handleImageError" />
-             </div>
-             <div class="flex-1 min-w-0">
-               <p class="text-sm font-bold text-slate-800 dark:text-white truncate leading-tight">{{ detail.inventaris?.nama_barang }}</p>
-               <p class="text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-1 italic">{{ detail.inventaris?.kode_barang }}</p>
-               <div class="mt-2 inline-flex items-center px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-500/20">
-                  <span class="text-[10px] font-black uppercase tracking-tighter">{{ detail.quantity }} UNIT DIPINJAM</span>
-               </div>
-             </div>
-          </div>
-          
-          <div class="grid grid-cols-2 gap-8">
-            <div class="space-y-1">
-              <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Periode Mulai</p>
-              <p class="text-[12px] font-bold text-slate-700 dark:text-white">{{ formatDate(detail.tanggal_mulai) }}</p>
+          <div :class="statusTheme(detail.status).card" class="p-5 rounded-[2rem] flex items-center justify-between border transition-all duration-500">
+            <div class="flex items-center gap-4">
+              <div :class="statusTheme(detail.status).iconBg" class="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg text-white">
+                <Package class="w-6 h-6" />
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[14px] font-bold text-slate-800 dark:text-white leading-tight capitalize">Logistik Aset</span>
+                <span class="text-[10px] text-slate-400 font-black uppercase tracking-wider">Status Administrasi</span>
+              </div>
             </div>
-            <div class="space-y-1 text-right">
-              <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Batas Kembali</p>
-              <p class="text-[12px] font-bold text-slate-700 dark:text-white">{{ formatDate(detail.tanggal_selesai) }}</p>
+            <span :class="statusTheme(detail.status).badge" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+              {{ detail.status }}
+            </span>
+          </div>
+
+          <div class="bg-slate-50 dark:bg-white/5 rounded-[2rem] p-5 border border-slate-100 dark:border-white/5">
+            <div class="flex items-center gap-5">
+              <div class="w-20 h-20 bg-white dark:bg-white/5 rounded-3xl overflow-hidden flex-shrink-0 shadow-sm border border-slate-100 dark:border-white/10">
+                <img :src="getPhotoUrl(detail.inventaris?.foto_barang)" class="w-full h-full object-cover" @error="handleImageError" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-slate-800 dark:text-white truncate leading-tight capitalize">{{ detail.inventaris?.nama_barang }}</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">{{ detail.inventaris?.kode_barang }}</p>
+                <div class="mt-2 inline-flex items-center px-2.5 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20">
+                   <span class="text-[9px] font-black uppercase tracking-tighter">{{ detail.quantity }} Unit Dipinjam</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="bg-white dark:bg-[#121512] rounded-[3rem] p-8 shadow-xl border border-white dark:border-white/5">
-          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Memo Operasional</p>
-          <div class="p-5 bg-slate-50 dark:bg-white/5 rounded-[2rem] border-l-[6px] border-[#2d4a3e] italic shadow-inner">
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-              "{{ detail.keterangan || 'Tidak ada catatan tambahan untuk otorisasi ini.' }}"
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-slate-50 dark:bg-white/5 p-5 rounded-[2rem] border border-slate-100 dark:border-white/5">
+              <p class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Periode Mulai</p>
+              <p class="text-[12px] font-bold text-slate-700 dark:text-slate-200 capitalize">{{ formatDate(detail.tanggal_mulai) }}</p>
+            </div>
+            <div class="bg-slate-50 dark:bg-white/5 p-5 rounded-[2rem] border border-slate-100 dark:border-white/5">
+              <p class="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Batas Kembali</p>
+              <p class="text-[12px] font-bold text-slate-700 dark:text-slate-200 capitalize">{{ formatDate(detail.tanggal_selesai) }}</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 dark:bg-white/5 rounded-[2rem] p-6 border border-slate-100 dark:border-white/5">
+            <div class="flex items-center gap-3 mb-3">
+              <Hash class="w-4 h-4 text-emerald-500 opacity-60" />
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Memo Operasional</p>
+            </div>
+            <p class="text-[12px] text-slate-600 dark:text-slate-300 font-medium italic leading-relaxed capitalize">
+              "{{ detail.keterangan || 'Tidak Ada Catatan Tambahan Untuk Otorisasi Ini.' }}"
             </p>
           </div>
+
         </div>
 
-        <div v-if="detail.status === 'disetujui'" class="pt-4 animate-fade-in">
+        <div v-if="detail.status === 'disetujui'" class="pt-4 animate-fade-in space-y-6">
           <button 
             @click="isReturnModalOpen = true" 
-            :disabled="submitting"
-            class="btn-primary-eco"
+            class="w-full py-5 bg-[#1e332a] text-white rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-4 shadow-emerald-900/20 border border-white/10"
           >
-            <ArrowUpCircle class="w-5 h-5" />
-            <span class="tracking-[0.2em]">KEMBALIKAN BARANG</span>
+            <ArrowUpCircle class="w-5 h-5 text-emerald-400" />
+            <span>Kembalikan Barang</span>
           </button>
-          <p class="text-[9px] text-center text-slate-400 mt-6 px-10 uppercase font-black tracking-widest leading-relaxed opacity-60 italic">
-            Harap pastikan integritas aset terjaga saat proses pengembalian.
-          </p>
         </div>
-      </div>
+      </template>
     </div>
+
+    <footer class="pt-10 pb-6 text-center">
+      <p class="text-[10px] text-slate-400 dark:text-slate-600 font-black tracking-widest capitalize">Ciwangun Indah Camp</p>
+    </footer>
 
     <ModalReturn 
       :isOpen="isReturnModalOpen" 
@@ -123,18 +141,16 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/services/api';
 import { 
-  ChevronLeft, Loader2, Package, Clock, 
-  ArrowUpCircle, RefreshCw 
+  ChevronLeft, Package, Clock, 
+  ArrowUpCircle, Hash 
 } from 'lucide-vue-next';
 
-// Pastikan file ini sudah Anda buat sebelumnya
 import ModalReturn from '../components/ModalReturnPeminjaman.vue';
 
 const route = useRoute();
 const router = useRouter();
 const detail = ref(null);
 const loading = ref(true);
-const submitting = ref(false);
 const isReturnModalOpen = ref(false);
 const countdown = ref({ days: 0, hours: 0, minutes: 0 });
 let timer = null;
@@ -146,18 +162,36 @@ const fetchDetail = async () => {
   try {
     const res = await api.get(`/karyawan/peminjaman/${route.params.id}`);
     detail.value = res.data.data;
-    if (detail.value.status === 'disetujui') {
-      startCountdown();
-    }
+    if (detail.value.status === 'disetujui') { startCountdown(); }
   } catch (err) {
-    console.error("Fetch Detail Error:", err);
+    console.error("fetch detail error:", err);
   } finally {
-    setTimeout(() => { loading.value = false; }, 400);
+    setTimeout(() => { loading.value = false; }, 600);
   }
 };
 
-const handleSuccess = () => {
-  fetchDetail(); // Refresh data ke status 'selesai'
+const statusTheme = (status) => {
+  const s = status?.toLowerCase() || '';
+  if (s === 'disetujui') return { 
+    card: 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-100/50 dark:border-emerald-500/10',
+    iconBg: 'bg-emerald-500 shadow-emerald-200/50',
+    badge: 'bg-emerald-500 text-white',
+  };
+  if (s === 'ditolak') return { 
+    card: 'bg-rose-50/50 dark:bg-rose-500/5 border-rose-100/50 dark:border-rose-500/10',
+    iconBg: 'bg-rose-500 shadow-rose-200/50',
+    badge: 'bg-rose-500 text-white',
+  };
+  if (s === 'selesai') return { 
+    card: 'bg-indigo-50/50 dark:bg-indigo-500/5 border-indigo-100/50 dark:border-indigo-500/10',
+    iconBg: 'bg-indigo-500 shadow-indigo-200/50',
+    badge: 'bg-indigo-500 text-white',
+  };
+  return { 
+    card: 'bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10',
+    iconBg: 'bg-amber-500 shadow-amber-200/50',
+    badge: 'bg-amber-500 text-white',
+  };
 };
 
 const startCountdown = () => {
@@ -165,7 +199,6 @@ const startCountdown = () => {
     const now = new Date().getTime();
     const end = new Date(detail.value.tanggal_selesai).getTime();
     const diff = end - now;
-
     if (diff > 0) {
       countdown.value.days = Math.floor(diff / (1000 * 60 * 60 * 24));
       countdown.value.hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -175,9 +208,8 @@ const startCountdown = () => {
       clearInterval(timer);
     }
   };
-  
   updateTimer();
-  timer = setInterval(updateTimer, 60000); // Sinkronisasi setiap 1 menit
+  timer = setInterval(updateTimer, 60000);
 };
 
 const getPhotoUrl = (path) => {
@@ -186,9 +218,7 @@ const getPhotoUrl = (path) => {
   return `${baseUrl.replace(/\/$/, "")}/storage/${cleanPath}`;
 };
 
-const handleImageError = (e) => {
-  e.target.src = '/img/default-inventaris.png';
-};
+const handleImageError = (e) => { e.target.src = '/img/default-inventaris.png'; };
 
 const formatDate = (date) => {
   if (!date) return '-';
@@ -197,35 +227,23 @@ const formatDate = (date) => {
   });
 };
 
-const statusClass = (status) => {
-  const s = status?.toLowerCase();
-  switch (s) {
-    case 'pending': return 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20';
-    case 'disetujui': return 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20';
-    case 'ditolak': return 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20';
-    case 'selesai': return 'bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20';
-    default: return 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-white/5 dark:border-white/10';
-  }
-};
+const handleSuccess = () => { fetchDetail(); };
 
 onMounted(fetchDetail);
-onUnmounted(() => {
-  if (timer) clearInterval(timer);
-});
+onUnmounted(() => { if (timer) clearInterval(timer); });
 </script>
 
-<style scoped lang="postcss">
-.btn-primary-eco {
-    @apply w-full py-5 bg-[#2d4a3e] text-white rounded-[2rem] font-black text-[11px] 
-           uppercase tracking-[0.2em] shadow-2xl active:scale-95 transition-all 
-           flex items-center justify-center gap-4 hover:bg-[#385b4d] shadow-emerald-900/20;
+<style scoped>
+.animate-fade-in-up { 
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+  opacity: 0;
 }
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes fadeInUp { 
+  from { transform: translateY(30px); opacity: 0; } 
+  to { transform: translateY(0); opacity: 1; } 
 }
-.animate-fade-in-up { animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+
+* { -webkit-tap-highlight-color: transparent; }
 </style>

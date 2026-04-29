@@ -61,14 +61,15 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div class="space-y-2">
-            <label class="kpi-label !text-slate-500">NIP (Auto-Generated) <span class="text-rose-500">*</span></label>
+            <label class="kpi-label !text-slate-500">NIP <span class="text-rose-500">*</span></label>
             <div class="relative">
               <input type="text" v-model="form.nip" class="input-field-eco !bg-slate-50 dark:!bg-slate-900/50 cursor-not-allowed font-mono" disabled />
               <Lock class="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" />
             </div>
           </div>
+          
           <div class="space-y-2">
             <label class="kpi-label !text-slate-500">Departemen <span class="text-rose-500">*</span></label>
             <select v-model="form.departemen_id" class="input-field-eco" required>
@@ -78,12 +79,24 @@
               </option>
             </select>
           </div>
+
           <div class="space-y-2">
-            <label class="kpi-label !text-slate-500">Level Akses <span class="text-rose-500">*</span></label>
+            <label class="kpi-label !text-slate-500">Akses <span class="text-rose-500">*</span></label>
             <select v-model="form.role" class="input-field-eco" required>
-              <option value="karyawan">Karyawan (Unit)</option>
-              <option value="admin">Administrator</option>
+              <option value="karyawan">Karyawan</option>
+              <option value="admin">Admin</option>
             </select>
+          </div>
+
+          <div class="space-y-2">
+            <label class="kpi-label !text-slate-500">Status <span class="text-rose-500">*</span></label>
+            <select v-model="form.status_kerja" class="input-field-eco" required>
+              <option value="Aktif">Aktif</option>
+              <option value="Permanent">Permanent</option>
+              <option value="Kontrak">Kontrak</option>
+              <option value="Harian">Harian</option>
+            </select>
+            <p v-if="errors.status_kerja" class="text-[10px] font-bold text-rose-500 uppercase mt-1 italic">{{ errors.status_kerja[0] }}</p>
           </div>
         </div>
       </div>
@@ -167,6 +180,7 @@ const form = ref({
   tempat_lahir: "",
   tanggal_lahir: "",
   role: "karyawan",
+  status_kerja: "Aktif", // Properti baru
   password: null,
 });
 
@@ -254,18 +268,18 @@ onMounted(() => {
 
 .input-field-eco {
   @apply w-full bg-white dark:bg-[#1a1d19] border border-gray-100 dark:border-gray-800 
-         rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#2d4a3e] outline-none transition-all dark:text-white font-poppins;
+          rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#2d4a3e] outline-none transition-all dark:text-white font-poppins;
 }
 
 .btn-refresh-eco {
   @apply inline-flex items-center px-6 py-3.5 bg-[#2d4a3e] text-white rounded-xl text-[10px] font-bold uppercase tracking-widest
-         shadow-lg shadow-[#2d4a3e]/20 hover:bg-[#385b4d] active:scale-95 transition-all cursor-pointer font-poppins disabled:opacity-50;
+          shadow-lg shadow-[#2d4a3e]/20 hover:bg-[#385b4d] active:scale-95 transition-all cursor-pointer font-poppins disabled:opacity-50;
 }
 
 .btn-back-eco {
   @apply inline-flex items-center px-6 py-3.5 bg-white dark:bg-[#1a1d19] border border-gray-100 dark:border-gray-800 
-         rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-50 
-         dark:hover:bg-slate-800 transition-all active:scale-95 font-poppins;
+          rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-50 
+          dark:hover:bg-slate-800 transition-all active:scale-95 font-poppins;
 }
 
 .animate-fade-in { 

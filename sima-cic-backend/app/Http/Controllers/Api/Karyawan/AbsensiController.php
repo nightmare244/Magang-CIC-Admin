@@ -18,112 +18,118 @@ class AbsensiController extends Controller
      */
     public function checkInOrOut(Request $request)
     {
-        // Menggunakan Database Transaction untuk keamanan data
         DB::beginTransaction();
 
         try {
             $validated = $request->validate([
-                'qr_code'   => 'required|string', // Hasil scan QR permanen atau ketik manual
+                'qr_code'   => 'required|string',
                 'latitude'  => 'required|numeric',
                 'longitude' => 'required|numeric',
             ]);
 
-            // 1. Ambil Parameter dari Tabel Settings
-            $currentManualCode = Setting::getByKey('static_qr_code', ''); 
-            $staticQrID        = "CIC-OFFICE-PRIMARY"; 
-            
+            // 1. Ambil Konfigurasi dari Admin
+            $currentManualCode = Setting::getByKey('static_qr_code', '');
+            $staticQrID        = "CIC-OFFICE-PRIMARY";
             $officeLat         = (float) Setting::getByKey('company_latitude', -6.680611);
             $officeLng         = (float) Setting::getByKey('company_longitude', 107.517056);
             $radius            = (int) Setting::getByKey('company_radius_meters', 100);
+            $jamPulangKantorStr = Setting::getByKey('jam_pulang_kantor', '17:00:00');
 
-            // 2. Normalisasi Input (Hapus spasi dan paksa ke huruf besar)
+            // 2. Validasi Kode QR / Manual
             $userInput = strtoupper(trim($validated['qr_code']));
-
-            // 3. Validasi Kode (Bisa menggunakan QR Permanen ATAU Kode Manual Admin)
             $isScanQR      = ($userInput === strtoupper($staticQrID));
             $isManualInput = ($userInput === strtoupper(trim($currentManualCode)));
 
             if (!$isScanQR && !$isManualInput) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Kode atau QR tidak valid! Silakan gunakan QR resmi atau kode terbaru.'
-                ], 422);
+                return response()->json(['success' => false, 'message' => 'Kode atau QR tidak valid!'], 422);
             }
 
-            // 4. Validasi Jarak (Geofencing)
+            // 3. Validasi Geofencing (Radius)
             $distance = $this->calculateDistance($officeLat, $officeLng, $validated['latitude'], $validated['longitude']);
-            
             if ($distance > $radius) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal! Anda berada di luar radius kantor (' . round($distance) . ' meter).'
-                ], 422);
+                return response()->json(['success' => false, 'message' => 'Di luar radius (' . round($distance) . 'm).'], 422);
             }
 
-            // 5. Inisialisasi Waktu & Aturan Jam Masuk (TERMASUK TOLERANSI)
             $today = Carbon::today()->toDateString();
-            $now = Carbon::now();
-            
-            $jamMasukStr = Setting::getByKey('jam_masuk_kantor', '08:00:00');
-            // Ambil menit toleransi dari setting (default 0 jika tidak ada)
-            $menitToleransi = (int) Setting::getByKey('toleransi_keterlambatan', 0);
-
-            $jamMasukLimit = Carbon::parse($jamMasukStr); 
-            // Batas maksimal untuk dianggap hadir (lewat dari ini status_hari jadi ALPA)
-            $batasAlpaLimit = $jamMasukLimit->copy()->addMinutes($menitToleransi);
-
-            // 6. Cek data absensi hari ini
-            $absensi = Absensi::where('user_id', Auth::id())
-                              ->where('tanggal', $today)
-                              ->first();
-
-            $action = 'in';
+            $now = Carbon::now('Asia/Jakarta'); // Pastikan timezone sesuai
+            $absensi = Absensi::where('user_id', Auth::id())->where('tanggal', $today)->first();
 
             if (!$absensi) {
-                // --- PROSES ABSEN MASUK ---
+                // --- PROSES MASUK ---
+                $jamMasukStr = Setting::getByKey('jam_masuk_kantor', '08:00:00');
+                $menitToleransi = (int) Setting::getByKey('toleransi_keterlambatan', 0);
+                $jamMasukLimit = Carbon::parse($jamMasukStr);
+                $batasAlpaLimit = $jamMasukLimit->copy()->addMinutes($menitToleransi);
+
                 $absensi = new Absensi();
                 $absensi->user_id = Auth::id();
                 $absensi->tanggal = $today;
                 $absensi->jam_masuk = $now->toTimeString();
                 $absensi->lokasi_masuk = $validated['latitude'] . ',' . $validated['longitude'];
-                
-                // LOGIKA EVALUASI TOLERANSI & ALPA
-                if ($now->greaterThan($batasAlpaLimit)) {
-                    // JIKA MELEBIHI BATAS TOLERANSI
-                    $absensi->status_hari = 'ALPA';
-                    $absensi->status_masuk = 'terlambat';
-                    $message = 'Absensi dicatat, namun Anda melewati batas toleransi (' . $menitToleransi . ' menit). Status hari ini: ALPA.';
-                } else {
-                    // JIKA MASIH DALAM RENTANG TOLERANSI
+
+                if ($now->lessThanOrEqualTo($jamMasukLimit)) {
                     $absensi->status_hari = 'HADIR';
-                    // Tentukan apakah "tepat waktu" atau "terlambat" (meski masih dianggap HADIR)
-                    $absensi->status_masuk = $now->greaterThan($jamMasukLimit) ? 'terlambat' : 'tepat_waktu';
-                    $message = 'Berhasil melakukan absensi masuk!';
+                    $absensi->status_masuk = 'tepat_waktu';
+                    $message = "Berhasil masuk tepat waktu.";
+                } elseif ($now->lessThanOrEqualTo($batasAlpaLimit)) {
+                    $absensi->status_hari = 'HADIR';
+                    $absensi->status_masuk = 'terlambat';
+                    $message = "Berhasil masuk (Terlambat).";
+                } else {
+                    $absensi->status_hari = 'ALPA';
+                    $absensi->status_masuk = 'terlambat_alpa';
+                    $message = "Masuk dicatat ALPA (Lewat toleransi $menitToleransi mnt).";
                 }
-                
                 $action = 'in';
-            } elseif (!$absensi->jam_pulang) {
-                // --- PROSES ABSEN PULANG ---
-                $absensi->jam_pulang = $now->toTimeString();
-                $absensi->lokasi_pulang = $validated['latitude'] . ',' . $validated['longitude'];
-                
-                $message = 'Berhasil melakukan absensi pulang!';
-                $action = 'out';
+} elseif (!$absensi->jam_pulang) {
+            // --- PROSES PULANG (ANTI SHIFT MALAM ERROR) ---
+            
+            $getSetting = Setting::where('key', 'jam_pulang_kantor')->first();
+            $jamPulangKantorStr = $getSetting ? $getSetting->value : '17:00:00';
+            
+            $now = Carbon::now('Asia/Jakarta');
+            $jamPulangLimit = Carbon::parse($jamPulangKantorStr, 'Asia/Jakarta');
+
+            // LOGIKA KHUSUS: Jika jam pulang di-set 00:00, kita anggap itu akhir hari (23:59:59)
+            // agar tidak dianggap sebagai jam 12 malam tadi pagi.
+            if ($jamPulangKantorStr === '00:00:00' || $jamPulangKantorStr === '00:00') {
+                $jamPulangLimit = Carbon::today('Asia/Jakarta')->endOfDay(); 
             } else {
-                // Jika sudah ada jam masuk dan jam pulang
+                $jamPulangLimit->setDate($now->year, $now->month, $now->day);
+            }
+
+            // VALIDASI
+            if ($now->lt($jamPulangLimit)) {
+                $diff = $now->diff($jamPulangLimit);
+                
+                // Hitung sisa waktu agar informatif
+                $sisa = "";
+                if ($diff->h > 0) $sisa .= $diff->h . " jam ";
+                $sisa .= $diff->i . " menit";
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Anda sudah menyelesaikan absensi (Masuk & Pulang) untuk hari ini.'
-                ], 422);
+                    'message' => "BELUM WAKTUNYA PULANG! Batas absen pulang adalah pukul $jamPulangKantorStr. Tunggu $sisa lagi."
+                ], 403);
+            }
+
+            // Lolos validasi
+            $absensi->jam_pulang = $now->toTimeString();
+            $absensi->lokasi_pulang = $validated['latitude'] . ',' . $validated['longitude'];
+            $message = 'Berhasil absen pulang! Hati-hati di jalan.';
+            $action = 'out';
+            
+        } else {
+                return response()->json(['success' => false, 'message' => 'Anda sudah menyelesaikan absensi hari ini.'], 422);
             }
 
             $absensi->save();
-            DB::commit(); 
+            DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => $message,
-                'action'  => $action, 
+                'action'  => $action,
                 'data' => [
                     'jam_masuk'    => $absensi->jam_masuk,
                     'jam_pulang'   => $absensi->jam_pulang,
@@ -133,12 +139,9 @@ class AbsensiController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack(); 
+            DB::rollBack();
             Log::error('Absensi Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
         }
     }
 
@@ -150,9 +153,9 @@ class AbsensiController extends Controller
         $earthRadius = 6371000;
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
-        $a = sin($dLat/2) * sin($dLat/2) +
+        $a = sin($dLat / 2) * sin($dLat / 2) +
             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-            sin($dLon/2) * sin($dLon/2);
+            sin($dLon / 2) * sin($dLon / 2);
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         return $earthRadius * $c;
     }
@@ -169,11 +172,12 @@ class AbsensiController extends Controller
 
             $formattedData = $absensi->getCollection()->map(function ($item) {
                 return [
-                    'id'       => $item->id,
-                    'tanggal'  => $item->tanggal,
-                    'checkin'  => $item->jam_masuk,
-                    'checkout' => $item->jam_pulang,
-                    'status'   => $item->status_hari,
+                    'id'           => $item->id,
+                    'tanggal'      => $item->tanggal,
+                    'jam_masuk'    => $item->jam_masuk,
+                    'jam_pulang'   => $item->jam_pulang,
+                    'status_hari'  => $item->status_hari,
+                    'status_masuk' => $item->status_masuk,
                 ];
             });
 
@@ -212,8 +216,8 @@ class AbsensiController extends Controller
                     'tanggal'       => $absensi->tanggal,
                     'jam_masuk'     => $absensi->jam_masuk,
                     'jam_pulang'    => $absensi->jam_pulang,
-                    'status_hari'   => $absensi->status_hari, 
-                    'status_masuk'  => $absensi->status_masuk, 
+                    'status_hari'   => $absensi->status_hari,
+                    'status_masuk'  => $absensi->status_masuk,
                     'lokasi_masuk'  => $absensi->lokasi_masuk,
                     'lokasi_pulang' => $absensi->lokasi_pulang,
                 ]

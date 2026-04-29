@@ -33,7 +33,7 @@ return new class extends Migration
             $table->foreignId('departemen_id')->nullable();
 
             $table->enum('role', ['admin', 'karyawan'])->default('karyawan');
-            $table->boolean('is_active')->default(true)->comment('Untuk menonaktifkan karyawan');
+            $table->string('status_kerja')->default('Aktif')->comment('Status: Aktif, Permanent, Kontrak, Harian');
             
             $table->rememberToken();
             $table->timestamps();

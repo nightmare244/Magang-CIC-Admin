@@ -24,39 +24,33 @@ class AbsensiAdminController extends Controller
     {
         $date = $request->date ? Carbon::parse($request->date) : Carbon::today();
         
-        // Ambil Pengaturan
         $configJamMasuk = Setting::getByKey('jam_masuk_kantor', '08:00:00');
         $menitToleransi = (int) Setting::getByKey('toleransi_keterlambatan', 0); 
-        
         $jamMasukLimit = Carbon::parse($configJamMasuk);
-        // Batas Akhir sebelum dianggap ALPA
         $batasAlpa = $jamMasukLimit->copy()->addMinutes($menitToleransi);
 
-        // Load relasi 'departemen' melalui user
         $query = Absensi::with(['user.departemen'])->whereDate('tanggal', $date);
 
-        // Filter berdasarkan departemen_id jika dikirim dari frontend
         if ($request->departemen_id) {
             $query->whereHas('user', function($q) use ($request) {
                 $q->where('departemen_id', $request->departemen_id);
             });
         }
 
-        $absensiRecords = $query->get();
-
-        $report = $absensiRecords->map(function ($absensi) use ($jamMasukLimit, $batasAlpa) {
+        $report = $query->get()->map(function ($absensi) use ($jamMasukLimit, $batasAlpa) {
             $jamMasuk = $absensi->jam_masuk ? Carbon::parse($absensi->jam_masuk) : null;
-            $statusMasuk = null;
-            $statusHari = strtoupper($absensi->status_hari ?? 'HADIR');
+            
+            $statusHari = strtoupper($absensi->status_hari ?? 'ALPA');
+            $statusMasuk = '-';
 
             if ($jamMasuk) {
-                // Logika Evaluasi Toleransi
                 if ($jamMasuk->greaterThan($batasAlpa)) {
                     $statusMasuk = 'TERLAMBAT (ALPA)';
-                    $statusHari = 'ALPA'; // Override jika lewat batas toleransi
                 } else {
                     $statusMasuk = $jamMasuk->greaterThan($jamMasukLimit) ? 'TERLAMBAT' : 'TEPAT WAKTU';
                 }
+            } else {
+                $statusMasuk = 'TIDAK ABSEN';
             }
 
             return [
@@ -71,7 +65,6 @@ class AbsensiAdminController extends Controller
             ];
         });
 
-        // Filter status dari frontend (TEPAT WAKTU, TERLAMBAT, ALPA)
         if ($request->status) {
             $report = $report->filter(function ($item) use ($request) {
                 if ($request->status === 'ALPA') return $item['status_hari'] === 'ALPA';
@@ -101,8 +94,9 @@ class AbsensiAdminController extends Controller
             $configJamMasuk = Setting::getByKey('jam_masuk_kantor', '08:00:00');
             $menitToleransi = (int) Setting::getByKey('toleransi_keterlambatan', 0);
             
-            $jamLimit = Carbon::parse($configJamMasuk);
-            $batasAlpa = $jamLimit->copy()->addMinutes($menitToleransi);
+            // Perbaikan: Menggunakan nama $jamMasukLimit agar konsisten
+            $jamMasukLimit = Carbon::parse($configJamMasuk);
+            $batasAlpa = $jamMasukLimit->copy()->addMinutes($menitToleransi);
 
             $query = Absensi::with(['user.departemen'])->whereDate('tanggal', $date);
 
@@ -114,17 +108,18 @@ class AbsensiAdminController extends Controller
 
             $records = $query->get();
 
-            $dataProcessed = $records->map(function ($absensi) use ($jamLimit, $batasAlpa) {
+            $dataProcessed = $records->map(function (Absensi $absensi) use ($jamMasukLimit, $batasAlpa): array {
                 $jamMasuk = $absensi->jam_masuk ? Carbon::parse($absensi->jam_masuk) : null;
                 $statusHari = strtoupper($absensi->status_hari ?? 'HADIR');
                 $statusMasuk = '-';
 
                 if ($jamMasuk) {
                     if ($jamMasuk->greaterThan($batasAlpa)) {
-                        $statusMasuk = 'TERLAMBAT (ALPA)';
-                        $statusHari = 'ALPA';
+                        $statusMasuk = 'TERLAMBAT (SISTEM ALPA)';
+                        $statusHari = 'HADIR'; 
                     } else {
-                        $statusMasuk = $jamMasuk->greaterThan($jamLimit) ? 'TERLAMBAT' : 'TEPAT WAKTU';
+                        $statusMasuk = $jamMasuk->greaterThan($jamMasukLimit) ? 'TERLAMBAT' : 'TEPAT WAKTU';
+                        $statusHari = strtoupper($absensi->status_hari ?? 'HADIR');
                     }
                 }
                 
@@ -140,7 +135,7 @@ class AbsensiAdminController extends Controller
 
             if ($statusFilter) {
                 $dataProcessed = $dataProcessed->filter(function ($item) use ($statusFilter) {
-                    if ($statusFilter === 'ALPA') return $item['status_hari'] === 'ALPA';
+                    if (strtoupper($statusFilter) === 'ALPA') return $item['status_hari'] === 'ALPA';
                     return $item['keterangan'] === strtoupper($statusFilter);
                 })->values();
             }
@@ -187,10 +182,6 @@ class AbsensiAdminController extends Controller
                 }, "Laporan_Presensi_{$date->format('Y-m-d')}.xlsx");
             }
 
-            // PDF Logic (Optional if you have a view)
-            // $pdf = Pdf::loadView('pdf.laporan_absensi', compact('dataProcessed', 'date'));
-            // return $pdf->download("Laporan_Presensi_{$date->format('Y-m-d')}.pdf");
-
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -208,8 +199,8 @@ class AbsensiAdminController extends Controller
         $configJamMasuk = Setting::getByKey('jam_masuk_kantor', '08:00:00');
         $menitToleransi = (int) Setting::getByKey('toleransi_keterlambatan', 0);
         
-        $jamLimit = Carbon::parse($configJamMasuk);
-        $batasAlpa = $jamLimit->copy()->addMinutes($menitToleransi);
+        $jamMasukLimit = Carbon::parse($configJamMasuk);
+        $batasAlpa = $jamMasukLimit->copy()->addMinutes($menitToleransi);
 
         $jamMasuk = $absensi->jam_masuk ? Carbon::parse($absensi->jam_masuk) : null;
         $statusMasuk = '-';
@@ -220,7 +211,8 @@ class AbsensiAdminController extends Controller
                 $statusMasuk = 'TERLAMBAT (ALPA)';
                 $statusHari = 'ALPA';
             } else {
-                $statusMasuk = $jamMasuk->greaterThan($jamLimit) ? 'TERLAMBAT' : 'TEPAT WAKTU';
+                $statusMasuk = $jamMasuk->greaterThan($jamMasukLimit) ? 'TERLAMBAT' : 'TEPAT WAKTU';
+                $statusHari = 'HADIR';
             }
         }
 
@@ -244,11 +236,6 @@ class AbsensiAdminController extends Controller
         return response()->json(['success' => true, 'data' => $data]);
     }
 
-    /**
-     * ======================================================
-     * HAPUS ABSENSI (PERMANEN)
-     * ======================================================
-     */
     public function destroy($id)
     {
         $absensi = Absensi::find($id);
@@ -259,34 +246,39 @@ class AbsensiAdminController extends Controller
         return response()->json(['success' => true, 'message' => 'Data berhasil dihapus.']);
     }
 
-    /**
-     * Update Pengaturan Kehadiran
-     */
     public function updateSettings(Request $request)
     {
-        $validated = $request->validate([
-            'static_qr_code'           => 'required|string',
-            'jam_masuk_kantor'         => 'required',
-            'jam_pulang_kantor'        => 'required',
-            'company_latitude'         => 'required|numeric',
-            'company_longitude'        => 'required|numeric',
-            'company_radius_meters'    => 'required|integer',
-            'toleransi_keterlambatan'  => 'required|integer|min:0', // <--- Tambah ini
-        ]);
-
-        foreach ($validated as $key => $value) {
+        foreach ($request->all() as $key => $value) {
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 
-        Artisan::call('config:clear');
-        Artisan::call('cache:clear');
+        $jamMasukBaru = Carbon::parse($request->jam_masuk_kantor);
+        $toleransi = (int) $request->toleransi_keterlambatan;
+        $batasAlpaBaru = $jamMasukBaru->copy()->addMinutes($toleransi);
 
-        return response()->json(['success' => true, 'message' => 'Pengaturan diperbarui.']);
+        $absensiHariIni = Absensi::whereDate('tanggal', Carbon::today())->get();
+
+        foreach ($absensiHariIni as $absen) {
+            if ($absen->jam_masuk) {
+                $jmKaryawan = Carbon::parse($absen->jam_masuk);
+                
+                if ($jmKaryawan->greaterThan($batasAlpaBaru)) {
+                    $absen->status_hari = 'ALPA';
+                    $absen->status_masuk = 'terlambat_alpa';
+                } else {
+                    $absen->status_hari = 'HADIR';
+                    $absen->status_masuk = $jmKaryawan->greaterThan($jamMasukBaru) ? 'terlambat' : 'tepat_waktu';
+                }
+                $absen->save(); 
+            }
+        }
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Konfigurasi disimpan & Status absensi hari ini telah disinkronkan!'
+        ]);
     }
 
-    /**
-     * Ambil Pengaturan Kehadiran
-     */
     public function getSettings()
     {
         return response()->json([
@@ -298,7 +290,7 @@ class AbsensiAdminController extends Controller
                 'company_latitude'         => Setting::getByKey('company_latitude'),
                 'company_longitude'        => Setting::getByKey('company_longitude'),
                 'company_radius_meters'    => Setting::getByKey('company_radius_meters'),
-                'toleransi_keterlambatan'  => Setting::getByKey('toleransi_keterlambatan', 0), // <--- Tambah ini
+                'toleransi_keterlambatan'  => Setting::getByKey('toleransi_keterlambatan', 0),
             ]
         ]);
     }
