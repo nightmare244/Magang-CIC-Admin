@@ -46,3 +46,7 @@ Route::get('/admin/izin/process-final', function (Request $request) {
         return "Gagal memproses data.";
     }
 })->name('izin.process.final');
+
+Route::get('/', function () {
+    return view('welcome');
+});
