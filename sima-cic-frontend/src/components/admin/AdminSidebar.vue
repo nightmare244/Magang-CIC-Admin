@@ -144,7 +144,7 @@ import logoImg from "../../assets/logo/logo.png";
 import { 
   X, LayoutDashboard, Megaphone, Users2, Layers, Clock4, 
   ChevronDown, CalendarCheck2, PackageSearch, Handshake, Sun, Moon, LogOut,
-  ChevronLeft, ChevronRight 
+  ChevronLeft, ChevronRight, CircleDollarSign, BanknoteArrowUp, BanknoteArrowDown
 } from "lucide-vue-next";
 
 const props = defineProps({ modelValue: Boolean });
@@ -166,6 +166,15 @@ const navigationGroups = [
     links: [
       { name: "Dashboard Central", icon: LayoutDashboard, to: "/admin/dashboard" },
       { name: "Broadcast Info", icon: Megaphone, to: "/admin/pengumuman" },
+      { name: "Laporan keuangan", icon: CircleDollarSign, to: "/admin/laporan-keuangan" },
+    ]
+  },
+
+    {
+    title: 'Keuangan & Operasional',
+    links: [
+      { name: "Pemasukan", icon: BanknoteArrowUp, to: "/admin/pemasukan" },
+      { name: "Pengeluaran", icon: BanknoteArrowDown, to: "/admin/pengeluaran" },
     ]
   },
   {

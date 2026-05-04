@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\Admin\PersetujuanPeminjamanController;
 use App\Http\Controllers\Api\Admin\PengumumanAdminController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\AbsensiAdminController;
+use App\Http\Controllers\PemasukanController;
+use App\Http\Controllers\PengeluaranController;
 // Karyawan Controllers
 use App\Http\Controllers\Api\Karyawan\AbsensiController;
 use App\Http\Controllers\Api\Karyawan\PengajuanIzinController;
