@@ -100,6 +100,12 @@ const closeModal = () => {
 const onFileChange = (e) => {
   const file = e.target.files[0];
   if (file) {
+    const fileType = file.name.split('.').pop().toLowerCase();
+    if (!['xlsx', 'xls', 'csv'].includes(fileType)) {
+      alert("Hanya mendukung file Excel (.xlsx, .xls) atau .csv");
+      e.target.value = ''; // Reset input
+      return;
+    }
     selectedFile.value = file;
   }
 };
@@ -133,14 +139,18 @@ const handleImport = async () => {
   try {
     const res = await api.post('/admin/karyawan/import', formData);
     
-    if (res.data.success) {
+    // Sesuaikan dengan respon 'status' dari Laravel UserController
+    if (res.data.status === 'success') {
+      alert(res.data.message); // Opsional: Tampilkan pesan sukses dari server
       emit('success'); 
       emit('close'); 
       selectedFile.value = null;
     }
   } catch (error) {
     console.error("Gagal Impor:", error);
-    alert(error.response?.data?.message || "Terjadi kesalahan saat mengunggah file.");
+    // Menampilkan pesan error detail dari backend (jika ada)
+    const errorMsg = error.response?.data?.message || "Terjadi kesalahan saat mengunggah file.";
+    alert(errorMsg);
   } finally {
     isProcessing.value = false;
   }

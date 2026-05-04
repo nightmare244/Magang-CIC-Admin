@@ -119,8 +119,14 @@ const defaultAvatar = new URL('@/assets/avatar-placeholder.png', import.meta.url
 // LOGIKA SINKRONISASI FOTO PROFIL USER NODE
 const avatarUrl = computed(() => {
   if (user.value?.foto_profil) {
-    // Memastikan path mengarah ke storage Laravel yang sudah di-link
-    return `${BACKEND_URL}/storage/${user.value.foto_profil}`;
+    // 1. Pastikan tidak ada double slash //
+    const baseUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+    
+    // 2. Ambil path foto. Jika di database tersimpan 'profil/namafile.jpg'
+    const path = user.value.foto_profil;
+    
+    // 3. Gabungkan. Hasilnya: http://localhost:8000/storage/profil/namafile.jpg
+    return `${baseUrl}/storage/${path}`;
   }
   return defaultAvatar;
 });

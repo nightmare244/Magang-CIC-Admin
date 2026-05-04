@@ -1,8 +1,124 @@
+<template>
+  <div class="min-h-screen bg-slate-50 dark:bg-[#080908] font-poppins pb-32 transition-colors duration-500 overflow-x-hidden">
+    
+    <header class="relative pt-14 pb-24 px-6 overflow-hidden">
+      <div 
+        class="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat scale-110"
+        style="background-image: url('/images/background.jpg'); filter: blur(1px);" 
+      ></div>
+      <div class="absolute inset-0 z-10 bg-gradient-to-br from-[#1e332a]/95 via-[#1e332a]/85 to-[#1e332a]/40 dark:from-[#0a0f0d]/98 dark:via-[#0a0f0d]/90 dark:to-transparent"></div>
+      
+      <div class="relative z-20 max-w-md mx-auto">
+        <div class="flex items-center gap-4">
+          <button 
+            @click="router.back()" 
+            class="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl text-white active:scale-90 transition-all"
+          >
+            <ChevronLeft class="w-6 h-6" />
+          </button>
+
+          <div>
+            <p class="text-[10px] font-medium text-emerald-500/90 leading-none mb-1 capitalize tracking-[0.3em]">pengaturan akun</p>
+            <h1 class="text-xl font-bold tracking-tight text-white capitalize">perbarui profil</h1>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-md mx-auto px-6 -mt-10 relative z-30 space-y-6">
+      
+      <div v-if="fetching" class="bg-white dark:bg-[#111311] rounded-[2.5rem] p-16 text-center shadow-sm border border-slate-100 dark:border-white/5">
+        <div class="w-10 h-10 border-4 border-emerald-500/10 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-[10px] font-bold text-slate-400 capitalize tracking-[0.2em]">sinkronisasi data...</p>
+      </div>
+
+      <div v-else class="bg-white dark:bg-[#111311] rounded-[2.5rem] p-6 shadow-sm border border-slate-100 dark:border-white/5 animate-fade-in-up">
+        
+        <div class="flex items-center gap-3 mb-8 ml-2">
+          <div class="w-1 h-4 bg-emerald-500 rounded-full"></div>
+          <h2 class="text-[10px] font-black text-slate-400 capitalize tracking-[0.2em]">informasi personal</h2>
+        </div>
+
+        <form @submit.prevent="submit" class="space-y-5">
+          
+          <div class="space-y-2 px-2">
+            <label class="text-[10px] font-black text-slate-400 capitalize tracking-[0.2em] ml-1">nama lengkap</label>
+            <input v-model="form.name" type="text" class="input-cic" placeholder="masukkan nama..." required />
+          </div>
+
+          <div class="space-y-2 px-2">
+            <label class="text-[10px] font-black text-slate-400 capitalize tracking-[0.2em] ml-1">nomor whatsapp</label>
+            <input v-model="form.nomor_hp" type="tel" class="input-cic" placeholder="0812..." />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 px-2">
+            <div class="space-y-2">
+              <label class="text-[10px] font-black text-slate-400 capitalize tracking-[0.2em] ml-1">tempat lahir</label>
+              <input v-model="form.tempat_lahir" type="text" class="input-cic" placeholder="kota..." />
+            </div>
+            <div class="space-y-2">
+              <label class="text-[10px] font-black text-slate-400 capitalize tracking-[0.2em] ml-1">tgl lahir</label>
+              <input v-model="form.tanggal_lahir" type="date" class="input-cic" />
+            </div>
+          </div>
+
+          <div class="space-y-2 px-2">
+            <label class="text-[10px] font-black text-slate-400 capitalize tracking-[0.2em] ml-1">jenis kelamin</label>
+            <div class="relative">
+              <select v-model="form.jenis_kelamin" class="input-cic appearance-none">
+                <option value="">pilih...</option>
+                <option value="L">laki-laki</option>
+                <option value="P">perempuan</option>
+              </select>
+              <div class="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <UserCircle class="w-4 h-4 opacity-40" />
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-2 px-2">
+            <label class="text-[10px] font-black text-slate-400 capitalize tracking-[0.2em] ml-1">alamat lengkap</label>
+            <textarea 
+              v-model="form.alamat" 
+              class="input-cic min-h-[120px] py-4 resize-none leading-relaxed font-medium" 
+              placeholder="tulis alamat domisili..."
+            ></textarea>
+          </div>
+
+          <div class="pt-6 space-y-4">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="btn-submit-cic w-full shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-3"
+            >
+              <div v-if="loading" class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+              <Save v-else class="w-4 h-4" />
+              <span class="capitalize tracking-[0.2em] font-black">{{ loading ? "proses..." : "simpan perubahan" }}</span>
+            </button>
+            
+            <button 
+              type="button"
+              @click="router.back()"
+              class="w-full text-[10px] font-bold text-slate-300 capitalize tracking-[0.4em] active:scale-95 transition-all py-2"
+            >
+              batalkan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <footer class="pt-10 pb-6 text-center">
+      <p class="text-[10px] text-slate-400 dark:text-slate-600 font-bold tracking-[0.5em] capitalize">ciwangun indah camp</p>
+    </footer>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from "vue";
 import api from "@/services/api";
 import { useRouter } from "vue-router";
-import { ChevronLeft, Save, Loader2, UserCircle } from "lucide-vue-next";
+import { ChevronLeft, Save, UserCircle } from "lucide-vue-next";
 
 const router = useRouter();
 const form = ref({
@@ -16,14 +132,9 @@ const form = ref({
 const loading = ref(false);
 const fetching = ref(true);
 
-/**
- * Mengambil data profil terbaru untuk mengisi form
- * Sesuai rute GET /karyawan/profil
- */
 const fetchProfil = async () => {
     try {
         const { data } = await api.get("/karyawan/profil");
-        // Mengisi form dengan data dari backend
         Object.assign(form.value, {
             name: data.data.name,
             nomor_hp: data.data.nomor_hp || "",
@@ -35,21 +146,16 @@ const fetchProfil = async () => {
     } catch (error) {
         console.error("Gagal mengambil data profil:", error);
     } finally {
-        fetching.value = false;
+        setTimeout(() => { fetching.value = false; }, 600);
     }
 };
 
 onMounted(fetchProfil);
 
-/**
- * Mengirimkan pembaruan profil ke backend
- * Sesuai rute PUT /karyawan/profil
- */
 const submit = async () => {
     loading.value = true;
     try {
         await api.put("/karyawan/profil", form.value);
-        // Kembali ke halaman profil setelah sukses
         router.push("/karyawan/profil");
     } catch (error) {
         alert(error.response?.data?.message || "Gagal memperbarui profil");
@@ -59,109 +165,31 @@ const submit = async () => {
 };
 </script>
 
-<template>
-  <div class="min-h-screen bg-[#F9FBFC] dark:bg-[#0a0c0a] font-poppins pb-32">
-    <header class="bg-[#2d4a3e] pt-12 pb-24 px-8 rounded-b-[4rem] shadow-xl text-white relative overflow-hidden">
-      <div class="absolute -right-10 -top-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl"></div>
-      <div class="relative z-10 flex items-center justify-between">
-        <button @click="$router.back()" class="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all">
-          <ChevronLeft class="w-6 h-6" />
-        </button>
-        <h1 class="text-xl font-bold tracking-tight">Edit Profil</h1>
-        <div class="w-10"></div>
-      </div>
-    </header>
-
-    <div class="max-w-md mx-auto px-6 -mt-12 relative z-20">
-      <div class="bg-white dark:bg-[#121512] rounded-[3rem] p-8 shadow-xl border border-white dark:border-white/5 animate-fade-in-up">
-        
-        <div v-if="fetching" class="py-20 text-center">
-            <Loader2 class="w-10 h-10 animate-spin text-emerald-500 mx-auto mb-4" />
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Menyiapkan Form...</p>
-        </div>
-
-        <form v-else @submit.prevent="submit" class="space-y-6">
-          <div class="flex items-center gap-2 mb-2">
-            <UserCircle class="w-5 h-5 text-emerald-600" />
-            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Informasi Personal</h2>
-          </div>
-
-          <div class="space-y-2">
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
-            <input v-model="form.name" type="text" class="input-cic" placeholder="Masukkan nama..." required />
-          </div>
-
-          <div class="space-y-2">
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nomor WhatsApp</label>
-            <input v-model="form.nomor_hp" type="tel" class="input-cic" placeholder="0812..." />
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tempat Lahir</label>
-              <input v-model="form.tempat_lahir" type="text" class="input-cic" placeholder="Kota..." />
-            </div>
-            <div class="space-y-2">
-              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Tgl Lahir</label>
-              <input v-model="form.tanggal_lahir" type="date" class="input-cic" />
-            </div>
-          </div>
-
-          <div class="space-y-2">
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Jenis Kelamin</label>
-            <select v-model="form.jenis_kelamin" class="input-cic appearance-none">
-              <option value="">Pilih...</option>
-              <option value="L">Laki-laki</option>
-              <option value="P">Perempuan</option>
-            </select>
-          </div>
-
-          <div class="space-y-2">
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Alamat Lengkap</label>
-            <textarea v-model="form.alamat" class="input-cic min-h-[100px] py-4 resize-none" placeholder="Tulis alamat domisili..."></textarea>
-          </div>
-
-          <div class="pt-4">
-            <button
-              type="submit"
-              :disabled="loading"
-              class="btn-cic-primary w-full py-5 flex items-center justify-center gap-3"
-            >
-              <Loader2 v-if="loading" class="w-5 h-5 animate-spin" />
-              <Save v-else class="w-4 h-4" />
-              <span>{{ loading ? "Menyimpan..." : "Simpan Perubahan" }}</span>
-            </button>
-            
-            <button 
-              type="button"
-              @click="$router.back()"
-              class="w-full mt-4 text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] active:scale-95 transition-all"
-            >
-              Batalkan
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</template>
-
 <style scoped lang="postcss">
 .input-cic {
-    @apply w-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 
-           rounded-2xl px-5 py-3.5 text-xs outline-none font-bold 
-           focus:ring-2 focus:ring-emerald-500 transition-all dark:text-white;
+    /* Font menggunakan bold (bukan black) agar isi input tidak terlalu berat dibanding label */
+    @apply w-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 
+           rounded-[1.5rem] px-6 py-4 text-[10px] outline-none font-bold tracking-[0.1em]
+           focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500/50 
+           transition-all duration-300 dark:text-white placeholder:text-slate-400 placeholder:font-medium;
 }
 
-.btn-cic-primary {
-    @apply bg-[#2d4a3e] text-white rounded-[2rem] font-bold text-xs 
-           uppercase tracking-[0.2em] shadow-xl shadow-emerald-900/20 
-           active:scale-95 transition-all disabled:opacity-50;
+.btn-submit-cic {
+    @apply bg-emerald-500 text-white rounded-[2rem] py-5 text-[10px];
 }
 
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+.animate-fade-in-up { 
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    opacity: 0;
 }
-.animate-fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+@keyframes fadeInUp { 
+    from { transform: translateY(30px); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+}
+
+/* Mematikan highlight biru pada mobile */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
 </style>

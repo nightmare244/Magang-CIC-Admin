@@ -97,7 +97,10 @@ class PengumumanAdminController extends Controller
             $pengumuman = Pengumuman::with('reads')->find($id);
             
             if (!$pengumuman) {
-                return response()->json(['status' => 'success', 'message' => 'Data sudah terhapus']);
+                return response()->json([
+                    'status' => 'success', 
+                    'message' => 'Data sudah terhapus'
+                ]);
             }
 
             // Hapus log anak (FK Constraint)

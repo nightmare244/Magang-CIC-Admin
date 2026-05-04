@@ -101,7 +101,7 @@ const props = defineProps({
   izin: { type: Object, required: true },
 });
 
-// Event detail mengirimkan ID izin untuk navigasi
+// Mengirimkan data objek utuh ke Index.vue agar modal mendapatkan detail karyawan
 defineEmits(["detail", "updateStatus"]);
 
 const formatDate = (dateString) => {
@@ -139,7 +139,6 @@ const formatStatus = (status) => {
   return status.toUpperCase();
 };
 
-// Logika Tema Warna
 const avatarBgClass = computed(() => {
   const colors = [
     'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400',
@@ -177,8 +176,8 @@ const statusAccentClass = computed(() => {
 <style scoped lang="postcss">
 .card-eco {
   @apply relative bg-white dark:bg-[#121512] rounded-[2.2rem] border border-gray-100 
-         dark:border-white/5 shadow-sm transition-all duration-500 
-         hover:shadow-xl font-poppins;
+          dark:border-white/5 shadow-sm transition-all duration-500 
+          hover:shadow-xl font-poppins;
 }
 .badge-status-eco {
   @apply inline-flex items-center px-4 py-1.5 rounded-xl text-[10px] font-bold tracking-widest border shadow-sm;

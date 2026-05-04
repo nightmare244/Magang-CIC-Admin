@@ -15,7 +15,7 @@ class PeminjamanInventaris extends Model
     protected $fillable = [
         'user_id',
         'inventaris_id',
-        'quantity', // Field baru untuk menyimpan jumlah barang yang dipinjam
+        'quantity',
         'tanggal_mulai',
         'tanggal_selesai',
         'tanggal_pengembalian',
@@ -26,7 +26,7 @@ class PeminjamanInventaris extends Model
     ];
 
     protected $casts = [
-        'quantity'              => 'integer', // Cast field quantity
+        'quantity'              => 'integer',
         'tanggal_mulai'         => 'date:Y-m-d',
         'tanggal_selesai'       => 'date:Y-m-d',
         'tanggal_pengembalian'  => 'datetime',
@@ -38,8 +38,18 @@ class PeminjamanInventaris extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // Relasi ke barang inventaris
+    /**
+     * Relasi ke barang inventaris (Nama asli)
+     */
     public function inventaris(): BelongsTo
+    {
+        return $this->belongsTo(Inventaris::class, 'inventaris_id');
+    }
+
+    /**
+     * ALIAS: Relasi ke barang (Agar sinkron dengan Controller with('barang'))
+     */
+    public function barang(): BelongsTo
     {
         return $this->belongsTo(Inventaris::class, 'inventaris_id');
     }

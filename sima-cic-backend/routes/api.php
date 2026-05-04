@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\Admin\PersetujuanPeminjamanController;
 use App\Http\Controllers\Api\Admin\PengumumanAdminController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\AbsensiAdminController;
+use App\Http\Controllers\PemasukanController;
+use App\Http\Controllers\PengeluaranController;
 // Karyawan Controllers
 use App\Http\Controllers\Api\Karyawan\AbsensiController;
 use App\Http\Controllers\Api\Karyawan\PengajuanIzinController;
@@ -84,7 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard-stats', [DashboardKaryawanController::class, 'summary']);
         Route::get('/profil', [ProfilController::class, 'show']);
         Route::put('/profil', [ProfilController::class, 'update']);
-        Route::post('/profil/upload-foto', [ProfilController::class, 'uploadPhoto']);
+       Route::post('/profil/upload-photo', [ProfilController::class, 'uploadPhoto']);
         Route::post('/profil/ganti-password', [ProfilController::class, 'changePassword']);
     });
 
@@ -105,8 +107,8 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Resource Karyawan
         Route::apiResource('karyawan', UserController::class)->except(['update']);
-        // Rute Update khusus karena mendukung upload foto (menggunakan POST)
-        Route::post('/karyawan/{user}', [UserController::class, 'update']);
+        
+        Route::put('/karyawan/{user}', [UserController::class, 'update']);
 
         // Master Data Departemen
         Route::apiResource('departemens', DepartemenController::class);

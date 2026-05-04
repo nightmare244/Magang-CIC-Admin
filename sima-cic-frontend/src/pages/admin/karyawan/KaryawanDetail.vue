@@ -87,28 +87,23 @@ const getProfil = async () => {
     const res = await api.get(`/admin/karyawan/${route.params.id}`);
     const data = res.data.data;
 
-    /**
-     * PERBAIKAN TOTAL: 
-     * Menggunakan substring(0, 10) adalah cara paling aman untuk 
-     * mengambil format YYYY-MM-DD murni dari database tanpa 
-     * intervensi zona waktu browser.
-     */
     if (data.tanggal_lahir) {
-      // Data asli DB: "2004-05-01" atau "2004-05-01T00:00:00.000000Z"
-      // Hasil substring: "2004-05-01" (Tetap Konsisten)
       data.tanggal_lahir = data.tanggal_lahir.substring(0, 10);
     }
 
+    // --- REVISI DI SINI ---
+    // Kita tidak pakai Boolean(is_active) lagi. 
+    // Kita pastikan data status_kerja ada dan rapi.
     karyawan.value = data;
     
-    // Pastikan status aktif berupa boolean murni
-    if (karyawan.value) {
-      karyawan.value.is_active = Boolean(karyawan.value.is_active);
+    if (karyawan.value && !karyawan.value.status_kerja) {
+      karyawan.value.status_kerja = 'Aktif'; // Default jika data kosong
     }
+    // -----------------------
+
   } catch (error) {
     console.error("Gagal sinkronisasi profil:", error);
   } finally {
-    // Memberikan jeda visual premium
     setTimeout(() => { loading.value = false; }, 400);
   }
 };

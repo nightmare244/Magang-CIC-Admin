@@ -24,35 +24,41 @@ class AuthController extends Controller
         // Cari user berdasarkan NIP
         $user = User::where('nip', $request->nip)->first();
 
-        // Cek jika user ada DAN password benar DAN user aktif
+        // 1. Cek jika user ada DAN password benar
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'nip' => ['NIP atau password salah.'],
             ]);
         }
 
-        if (! $user->is_active) {
+        /**
+         * 2. REVISI LOGIKA STATUS
+         * Mengganti is_active menjadi pengecekan status_kerja.
+         * Di sini kita asumsikan jika status_kerja ada isinya (Permanent, Kontrak, dll), maka dia aktif.
+         * Jika Anda ingin memblokir status tertentu (misal: 'Non-Aktif'), tambahkan di sini.
+         */
+        if (!$user->status_kerja) {
             throw ValidationException::withMessages([
-                'nip' => ['Akun Anda telah dinonaktifkan.'],
+                'nip' => ['Akun Anda belum memiliki status kerja aktif.'],
             ]);
         }
         
-        // Hapus token lama jika ada (opsional, tapi bagus untuk kebersihan)
+        // Hapus token lama jika ada
         $user->tokens()->delete();
 
         // Buat token baru
-$token = $user->createToken('auth-token-'.$user->nip)->plainTextToken;
+        $token = $user->createToken('auth-token-'.$user->nip)->plainTextToken;
 
-// Load relasi jika perlu
-$user->load('departemen');
+        // Load relasi departemen
+        $user->load('departemen');
 
-// Return role ke frontend juga
-return response()->json([
-    'message' => 'Login berhasil',
-    'user' => $user,
-    'token' => $token,
-    'role' => $user->role, // misal 'admin' atau 'karyawan'
-]);
+        // Return data ke frontend
+        return response()->json([
+            'message' => 'Login berhasil',
+            'user' => $user,
+            'token' => $token,
+            'role' => $user->role, // 'admin' atau 'karyawan'
+        ]);
     }
 
     /**
@@ -60,12 +66,10 @@ return response()->json([
      */
     public function user(Request $request)
     {
-        // Mengambil data user yang sedang login
-        // dan me-load relasi departemen
         $user = $request->user();
         $user->load('departemen');
 
-        return response()->json($request->user());
+        return response()->json($user);
     }
 
     /**
@@ -73,7 +77,7 @@ return response()->json([
      */
     public function logout(Request $request)
     {
-        // Hapus token yang sedang digunakan untuk request ini
+        // Hapus token yang sedang digunakan
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logout berhasil']);

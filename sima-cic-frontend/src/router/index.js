@@ -43,6 +43,16 @@ import AbsensiSettings from "@/pages/admin/absensi/Settings.vue";
 import AbsensiReport from "@/pages/admin/absensi/Report.vue"; 
 import AbsensiDetailAdmin from "@/pages/admin/absensi/Detail.vue";
 
+import PemasukanIndex from "@/pages/admin/keuangan/Pemasukan/index.vue";
+import PemasukanCreate from "@/pages/admin/keuangan/Pemasukan/Create.vue";
+import PemasukanEdit from "@/pages/admin/keuangan/Pemasukan/Edit.vue";
+import PemasukanDetail from "@/pages/admin/keuangan/Pemasukan/Detail.vue";
+
+import PengeluaranIndex from "@/pages/admin/keuangan/Pengeluaran/index.vue";
+import PengeluaranCreate from "@/pages/admin/keuangan/Pengeluaran/Create.vue";
+import PengeluaranEdit from "@/pages/admin/keuangan/Pengeluaran/Edit.vue";
+import PengeluaranDetail from "@/pages/admin/keuangan/Pengeluaran/Detail.vue";
+
 // ================= KARYAWAN PAGES =================
 import KaryawanDashboard from "@/pages/karyawan/dashboard/Dashboard.vue";
 import AbsensiIndex from "@/pages/karyawan/absensi/index.vue";
@@ -124,6 +134,18 @@ const routes = [
             { path: "pengumuman/:id", name: "admin.pengumuman.detail", component: PengumumanDetail, meta: { title: "Detail Pengumuman" } },
             { path: "pengumuman/:id/edit", name: "admin.pengumuman.edit", component: PengumumanEdit, meta: { title: "Edit Pengumuman" } },
             
+            // Keuangan - Pemasukan
+            { path: "pemasukan", name: "admin.pemasukan.index", component: PemasukanIndex, meta: { title: "Daftar Pemasukan" } },
+            { path: "pemasukan/create", name: "admin.pemasukan.create", component: PemasukanCreate, meta: { title: "Tambah Pemasukan" } },
+            { path: "pemasukan/:id", name: "admin.pemasukan.detail", component: PemasukanDetail, meta: { title: "Detail Pemasukan" } },
+            { path: "pemasukan/:id/edit", name: "admin.pemasukan.edit", component: PemasukanEdit, meta: { title: "Edit Pemasukan" } },
+            
+            // Keuangan - Pengeluaran
+            { path: "pengeluaran", name: "admin.pengeluaran.index", component: PengeluaranIndex, meta: { title: "Daftar Pengeluaran" } },
+            { path: "pengeluaran/create", name: "admin.pengeluaran.create", component: PengeluaranCreate, meta: { title: "Tambah Pengeluaran" } },
+            { path: "pengeluaran/:id", name: "admin.pengeluaran.detail", component: PengeluaranDetail, meta: { title: "Detail Pengeluaran" } },
+            { path: "pengeluaran/:id/edit", name: "admin.pengeluaran.edit", component: PengeluaranEdit, meta: { title: "Edit Pengeluaran" } },
+            
             // Absensi (Admin)
             { path: "absensi/settings", name: "admin.absensi.settings", component: AbsensiSettings, meta: { title: "Pengaturan Absensi" } },
             { path: "absensi/laporan", name: "admin.absensi.laporan", component: AbsensiReport, meta: { title: "Laporan Kehadiran" } },
@@ -168,7 +190,7 @@ const routes = [
     path: "peminjaman/:id", 
     name: "karyawan.peminjaman.detail", 
     // TAMBAHKAN /views/ DI PATH NYA
-    component: () => import('@/pages/karyawan/peminjaman/views/PeminjamanDetail.vue'), 
+    component: () => import('@/pages/karyawan/Peminjaman/views/PeminjamanDetail.vue'), 
     meta: { title: "Detail Peminjaman" } 
 },
 

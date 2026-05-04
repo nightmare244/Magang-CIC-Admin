@@ -17,7 +17,7 @@
             alt="Profile Picture"
             class="w-40 h-40 rounded-[2.5rem] object-cover border-8 border-[#f9fafb] dark:border-[#0a0c0a] shadow-2xl bg-white transition-transform group-hover:scale-105 duration-500"
           />
-          <div v-if="data.is_active" class="absolute bottom-3 right-3 w-6 h-6 bg-emerald-500 border-4 border-white dark:border-[#1a1d19] rounded-full shadow-lg" title="Status Aktif"></div>
+          <div v-if="data.status_kerja" class="absolute bottom-3 right-3 w-6 h-6 bg-emerald-500 border-4 border-white dark:border-[#1a1d19] rounded-full shadow-lg" title="Status Aktif"></div>
         </div>
 
         <div class="text-center sm:text-left flex-1 mb-2">
@@ -51,11 +51,13 @@
               <span class="info-label">Kontak HP</span>
               <span class="info-value font-mono">{{ data.nomor_hp || '-' }}</span>
             </div>
+            
             <div class="info-row">
-              <span class="info-label">Status Akses</span>
-              <span :class="data.is_active ? 'text-emerald-600' : 'text-rose-500'" class="info-value font-black uppercase tracking-widest flex items-center gap-1">
-                <div :class="data.is_active ? 'bg-emerald-500' : 'bg-rose-500'" class="w-1.5 h-1.5 rounded-full animate-pulse"></div>
-                {{ data.is_active ? 'Aktif' : 'Non-Aktif' }}
+              <span class="info-label">Status Kerja</span>
+              <span :class="getStatusStyles(data.status_kerja)" 
+                    class="px-4 py-1 rounded-xl text-[9px] font-black uppercase tracking-[0.1em] border shadow-sm inline-flex items-center gap-2 transition-all">
+                <div class="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></div>
+                {{ data.status_kerja || 'Aktif' }}
               </span>
             </div>
           </div>
@@ -114,6 +116,26 @@ const formatTanggal = (dateString) => {
 
 const setDefaultFoto = (event) => {
   event.target.src = '/default-user-avatar.png';
+};
+
+/**
+ * Helper untuk menentukan gaya visual berdasarkan teks status kerja
+ * Mempertahankan tampilan premium dengan warna yang berbeda tiap kategori
+ */
+const getStatusStyles = (status) => {
+  const s = status ? status.toLowerCase() : '';
+  switch (s) {
+    case 'permanent':
+      return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200';
+    case 'kontrak':
+      return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200';
+    case 'harian':
+      return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200';
+    case 'aktif':
+      return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 border-indigo-200';
+    default:
+      return 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400 border-slate-200';
+  }
 };
 </script>
 

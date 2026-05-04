@@ -89,7 +89,7 @@ class PengajuanIzinController extends Controller
 
         // --- PROSES KIRIM EMAIL ---
         try {
-            $emailPerusahaan = 'contact.dendi020504@gmail.com'; 
+            $emailPerusahaan = 'sima.wisatacic@gmail.com'; 
             Mail::to($emailPerusahaan)->send(new NotifikasiIzinKaryawan($izin));
         } catch (\Exception $e) {
             Log::error('Gagal kirim email izin: ' . $e->getMessage());
