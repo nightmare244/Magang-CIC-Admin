@@ -8,33 +8,36 @@
         <img 
           :src="imageUrl(item.foto_barang)" 
           alt="Foto Barang"
-          class="w-16 h-16 rounded-2xl object-cover border border-slate-100 dark:border-white/5 shadow-sm"
+          class="w-16 h-16 rounded-[1.2rem] object-cover border border-slate-100 dark:border-white/5 shadow-sm"
           @error="(e) => (e.target.src = '/img/default-inventaris.png')"
         />
         <div 
-          class="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-[#121512]"
+          class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-[#111311]"
           :class="item.status_ketersediaan === 'tersedia' ? 'bg-emerald-500' : 'bg-amber-500'"
         ></div>
       </div>
 
       <div class="flex-1 overflow-hidden">
         <div class="flex flex-col">
-          <p class="text-[9px] font-bold text-emerald-600/70 dark:text-emerald-500 uppercase tracking-widest mb-0.5">
-            {{ item.kode_barang }}
+          <p class="text-[9px] font-bold text-emerald-600/70 dark:text-emerald-500 tracking-[0.2em] mb-1 capitalize">
+            Sku: {{ item.kode_barang }}
           </p>
-          <h2 class="font-bold text-[15px] text-slate-800 dark:text-white truncate leading-tight">
+          <h2 class="font-bold text-[14px] text-slate-800 dark:text-white truncate leading-tight capitalize">
             {{ item.nama_barang }}
           </h2>
           
           <div class="flex items-center gap-2 mt-2">
-            <span :class="badgeClass(item.status_ketersediaan)" class="text-[10px] px-2.5 py-0.5 rounded-full font-bold border capitalize">
+            <span 
+              :class="badgeClass(item.status_ketersediaan)" 
+              class="text-[9px] px-3 py-1 rounded-xl font-bold border tracking-widest capitalize transition-colors duration-300"
+            >
               {{ item.status_ketersediaan.replace('_', ' ') }}
             </span>
           </div>
         </div>
       </div>
 
-      <div class="text-slate-300 group-hover:text-emerald-500 transition-colors duration-300 pr-2">
+      <div class="text-slate-300 group-hover:text-emerald-500 transition-all duration-300 pr-2 group-hover:translate-x-1">
         <ChevronRight class="w-5 h-5" />
       </div>
     </div>
@@ -72,14 +75,19 @@ function badgeClass(status) {
 
 <style scoped lang="postcss">
 .card-cic-inventaris {
-    @apply bg-white dark:bg-[#121512] p-4 rounded-[2rem] shadow-sm border border-slate-50 
-           dark:border-white/5 transition-all duration-300 cursor-pointer
-           active:scale-[0.97] hover:shadow-md hover:border-emerald-100 dark:hover:border-emerald-900/30;
+    /* tata letak kartu menggunakan rounded besar sesuai acuan */
+    @apply bg-white dark:bg-[#111311] p-4 rounded-[2rem] shadow-sm border border-slate-100 
+           dark:border-white/5 transition-all duration-500 cursor-pointer
+           active:scale-[0.97] hover:shadow-md hover:border-emerald-100 dark:hover:border-emerald-500/20;
 }
 
 .truncate {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 </style>

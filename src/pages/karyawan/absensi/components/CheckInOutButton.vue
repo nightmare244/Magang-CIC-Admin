@@ -1,163 +1,135 @@
 <template>
-  <div class="card-container">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-      
-      <!-- Tanggal & Status Hari -->
-      <div>
-        <h2 class="font-bold text-lg text-gray-900 dark:text-white">
-            {{ formatDate(item.tanggal) }}
+  <div class="card-cic-wrapper animate-fade-in-up">
+    <div class="flex justify-between items-start mb-4">
+      <div class="space-y-1">
+        <h2 class="text-[14px] font-extrabold text-slate-800 dark:text-white leading-none">
+          {{ formatDate(item.tanggal) }}
         </h2>
-        
-        <div class="mt-1">
-            <span :class="['badge-status', badgeClass(item.status_hari)]" class="capitalize">
-                {{ item.status_hari || 'Belum Absen' }}
-            </span>
-        </div>
+        <span :class="['badge-status-cic', badgeClass(item.status_hari)]">
+          {{ item.status_hari || 'Belum Absen' }}
+        </span>
       </div>
 
-      <!-- Waktu Masuk/Pulang -->
-      <div class="text-left sm:text-right mt-3 sm:mt-0 space-y-1">
-        <p class="text-sm text-gray-700 dark:text-gray-300">
-          Masuk: 
-          <b :class="item.status_masuk === 'terlambat' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'">
-            {{ item.jam_masuk ?? "-" }}
-          </b>
-        </p>
-        <p class="text-sm text-gray-700 dark:text-gray-300">
-          Pulang: <b>{{ item.jam_pulang ?? "-" }}</b>
-        </p>
+      <div class="flex gap-2">
+        <div class="time-box">
+          <span class="time-label">Masuk</span>
+          <span :class="item.status_masuk === 'terlambat' ? 'text-rose-500' : 'text-emerald-500'" class="time-value">
+            {{ item.jam_masuk ?? "--:--" }}
+          </span>
+        </div>
+        <div class="time-box">
+          <span class="time-label">Pulang</span>
+          <span class="time-value text-slate-700 dark:text-slate-200">
+            {{ item.jam_pulang ?? "--:--" }}
+          </span>
+        </div>
       </div>
     </div>
 
-    <!-- Foto Check-in/out -->
-    <div v-if="item.foto_checkin || item.foto_checkout" class="mt-4 pt-3 border-t dark:border-gray-700 flex gap-4">
+    <div v-if="item.foto_checkin || item.foto_checkout" class="foto-container-cic">
+      <div v-if="item.foto_checkin" class="flex flex-col items-center gap-1 flex-1">
+        <img :src="imageUrl(item.foto_checkin)" class="img-thumb-cic" alt="Check-in" />
+        <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Selfie Masuk</p>
+      </div>
       
-      <!-- Foto Check-in -->
-      <div v-if="item.foto_checkin" class="flex flex-col items-center">
-        <img :src="imageUrl(item.foto_checkin)" class="img-thumb" alt="Check-in Photo" />
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Check-in</p>
-      </div>
+      <div v-if="item.foto_checkin && item.foto_checkout" class="w-px h-10 bg-slate-200 dark:bg-white/10 self-center"></div>
 
-      <!-- Foto Check-out -->
-      <div v-if="item.foto_checkout" class="flex flex-col items-center">
-        <img :src="imageUrl(item.foto_checkout)" class="img-thumb" alt="Check-out Photo" />
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Check-out</p>
+      <div v-if="item.foto_checkout" class="flex flex-col items-center gap-1 flex-1">
+        <img :src="imageUrl(item.foto_checkout)" class="img-thumb-cic" alt="Check-out" />
+        <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Selfie Pulang</p>
       </div>
     </div>
 
-    <!-- ACTION BUTTONS -->
-    <div class="mt-4 pt-3 border-t dark:border-gray-700 flex justify-between items-center">
-        <!-- Tombol Detail -->
-        <router-link
-          :to="`/karyawan/absensi/${item.id}`"
-          class="btn-detail"
-        >
-          Lihat Detail
-        </router-link>
-        
-        <!-- Check-out Button (Hanya tampil jika sudah check-in dan belum check-out) -->
-        <div v-if="item.jam_masuk && !item.jam_pulang">
-            <button
-                @click="checkOut"
-                class="btn-checkout"
-            >
-                Check-out
-            </button>
-        </div>
+    <div class="flex gap-3 mt-4 pt-3 border-t border-slate-50 dark:border-white/5">
+      <router-link
+        :to="`/karyawan/absensi/${item.id}`"
+        class="flex-1 py-3 bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-bold uppercase tracking-widest text-center border border-slate-100 dark:border-white/5 active:scale-95 transition-all"
+      >
+        Lihat Detail
+      </router-link>
+      
+      <button
+        v-if="item.jam_masuk && !item.jam_pulang"
+        @click="checkOut"
+        class="flex-1 py-3 bg-[#1e332a] text-white rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg shadow-emerald-900/20 active:scale-95 transition-all"
+      >
+        Check-out
+      </button>
     </div>
-
   </div>
 </template>
 
 <script setup>
 import { defineProps, computed } from 'vue';
-import api from '@/services/api'; // Menggunakan API service yang benar
 
 const props = defineProps({
   item: { type: Object, required: true },
 });
 
-const emit = defineEmits(["checked-out"]);
-
-// Computed property untuk Base URL
 const baseUrl = computed(() => {
     const url = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
     return url.replace(/\/$/, ""); 
 });
 
-/**
- * Membangun URL Foto Selfie
- */
 const imageUrl = (path) => {
     if (!path) return '/default-user-avatar.png';
     const cleanPath = path.replace(/^\/storage\//i, '');
     return `${baseUrl.value}/storage/${cleanPath}`;
 };
 
-/**
- * Format Tanggal
- */
 function formatDate(dateString) {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    if (isNaN(date)) return dateString; 
-    return new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium' }).format(date);
+    return new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(date);
 }
 
-/**
- * Badge Class untuk Status Hari
- */
 function badgeClass(status) {
-    const lowerStatus = status ? status.toLowerCase() : '';
-    switch (lowerStatus) {
-        case 'hadir':
-            return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-        case 'terlambat':
-            return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-        case 'cuti':
-        case 'izin':
-        case 'sakit':
-            return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-        default:
-            return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-    }
+    const s = status ? status.toLowerCase() : '';
+    if (s.includes('hadir')) return 'bg-emerald-500 text-white';
+    if (s.includes('terlambat')) return 'bg-rose-500 text-white';
+    if (s.includes('izin') || s.includes('sakit')) return 'bg-sky-500 text-white';
+    return 'bg-slate-400 text-white';
 }
 
-// =======================================================
-// LOGIC CHECKOUT (INTEGRASI DARI QUERY USER)
-// =======================================================
-const checkOut = async () => {
-    // Tombol Check-out Langsung dari Riwayat TIDAK BISA TANPA GPS/Selfie.
-    // Kita arahkan ke halaman utama absensi dengan pesan.
-    
-    if (!confirm("Anda akan diarahkan ke halaman Absensi untuk Check-out. Lanjutkan?")) {
-        return;
+const checkOut = () => {
+    if (confirm("Anda akan diarahkan ke halaman utama untuk proses Check-out melalui Scanner. Lanjutkan?")) {
+        window.location.href = '/karyawan/absensi';
     }
-    
-    // Asumsi rute utama absensi adalah /karyawan/absensi
-    // Karyawan harus mengisi QR, GPS, dan Selfie di halaman utama.
-    window.location.href = '/karyawan/absensi';
 };
 </script>
 
 <style scoped lang="postcss">
-.card-container {
-    @apply border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow-md bg-white dark:bg-[#1a1d19];
+.card-cic-wrapper {
+  @apply bg-white dark:bg-[#111311] p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 mb-4;
 }
 
-.badge-status {
-    @apply px-3 py-1 rounded-full text-xs font-semibold inline-block;
+.badge-status-cic {
+  @apply px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest inline-block;
 }
 
-.img-thumb {
-    @apply w-20 h-20 rounded-lg object-cover shadow-sm border border-gray-300 dark:border-gray-700;
+.time-box {
+  @apply flex flex-col items-center bg-slate-50 dark:bg-white/5 px-3 py-1.5 rounded-2xl border border-slate-100 dark:border-white/5;
 }
 
-.btn-detail {
-    @apply inline-block bg-blue-600 text-white px-3 py-1 rounded-lg text-sm font-medium
-           hover:bg-blue-700 transition shadow-sm;
+.time-label {
+  @apply text-[7px] font-bold text-slate-400 uppercase tracking-tighter mb-0.5;
 }
-.btn-checkout {
-    @apply px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition shadow-md;
+
+.time-value {
+  @apply text-[11px] font-black;
 }
+
+.foto-container-cic {
+  @apply flex gap-4 p-3 bg-slate-50 dark:bg-[#0a0c0a] rounded-2xl border border-slate-100 dark:border-white/5 mt-3;
+}
+
+.img-thumb-cic {
+  @apply w-12 h-12 rounded-xl object-cover shadow-sm border-2 border-white dark:border-white/10;
+}
+
+@keyframes fadeIn-up {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fadeIn-up 0.5s ease-out forwards; }
 </style>

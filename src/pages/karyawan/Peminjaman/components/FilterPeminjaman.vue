@@ -1,25 +1,25 @@
 <template>
   <div class="relative w-full">
-    <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
+    <div class="flex gap-3 overflow-x-auto pb-4 no-scrollbar scroll-smooth px-1">
       <button
         v-for="status in statusOptions"
         :key="status.value"
         @click="selectStatus(status.value)"
         :class="[
-          'filter-pill-btn group',
+          'filter-pill-btn group transition-all duration-500',
           selected === status.value
             ? 'filter-active'
             : 'filter-inactive'
         ]"
       >
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2.5">
           <span 
             v-if="status.value !== ''" 
-            class="w-1.5 h-1.5 rounded-full transition-transform group-hover:scale-125"
+            class="w-1.5 h-1.5 rounded-full transition-transform duration-300 group-hover:scale-125"
             :class="dotColor(status.value)"
           ></span>
           
-          <span class="text-[10px] font-bold uppercase tracking-[0.15em] whitespace-nowrap">
+          <span class="text-[10px] font-black capitalize tracking-[0.1em] whitespace-nowrap">
             {{ status.label }}
           </span>
         </div>
@@ -36,7 +36,7 @@ const emit = defineEmits(["filter"]);
 const selected = ref("");
 
 const statusOptions = [
-  { label: "Semua", value: "" },
+  { label: "Semua Aset", value: "" },
   { label: "Pending", value: "pending" },
   { label: "Disetujui", value: "disetujui" },
   { label: "Ditolak", value: "ditolak" },
@@ -45,10 +45,10 @@ const statusOptions = [
 
 const dotColor = (status) => {
   switch (status) {
-    case 'disetujui': return 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]';
-    case 'ditolak': return 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]';
-    case 'pending': return 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]';
-    case 'selesai': return 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]';
+    case 'disetujui': return 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]';
+    case 'ditolak': return 'bg-rose-500 shadow-[0_0_8_rgba(244,63,94,0.6)]';
+    case 'pending': return 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]';
+    case 'selesai': return 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]';
     default: return 'bg-slate-300';
   }
 };
@@ -59,28 +59,38 @@ const selectStatus = (val) => {
 };
 </script>
 
-<style scoped lang="postcss">
+<style scoped>
+/* button base style */
 .filter-pill-btn {
-  @apply flex-shrink-0 px-6 py-3 rounded-2xl transition-all duration-300 border;
+  @apply flex-shrink-0 px-6 py-3.5 rounded-2xl border transition-all duration-300;
 }
 
+/* active state: mengikuti gaya portal izin (emerald gelap) */
 .filter-active {
-  @apply bg-[#2d4a3e] text-white border-[#2d4a3e] shadow-lg shadow-emerald-900/20 scale-[1.02];
+  @apply bg-[#1e332a] text-white border-[#1e332a] shadow-lg shadow-emerald-900/30 scale-[1.05] z-10;
 }
 
+/* inactive state: bersih dan minimalis */
 .filter-inactive {
-  @apply bg-white dark:bg-[#121512] text-slate-400 border-slate-100 dark:border-white/5 
-         hover:border-emerald-200 hover:text-emerald-600;
+  @apply bg-white dark:bg-[#111311] text-slate-400 border-slate-100 dark:border-white/5 
+         hover:border-emerald-500/30 hover:text-emerald-500;
 }
 
-/* Sembunyikan Scrollbar untuk Chrome, Safari dan Opera */
+/* utilitas capitalize */
+.capitalize {
+  text-transform: capitalize;
+}
+
+/* sembunyikan scrollbar */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
-
-/* Sembunyikan Scrollbar untuk IE, Edge dan Firefox */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 </style>

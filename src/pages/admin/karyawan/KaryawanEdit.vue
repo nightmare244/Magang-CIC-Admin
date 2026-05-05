@@ -116,10 +116,13 @@
                 </select>
               </div>
               <div class="space-y-1">
-                <label class="kpi-label !text-slate-500">Status Akun</label>
-                <select v-model="form.is_active" class="input-field-eco font-bold uppercase tracking-tighter" required>
-                  <option :value="1">AKTIF</option>
-                  <option :value="0">NON-AKTIF</option>
+                <label class="kpi-label !text-slate-500">Status Kerja <span class="text-rose-500">*</span></label>
+                <select v-model="form.status_kerja" class="input-field-eco font-bold uppercase tracking-tighter" required>
+                  <option value="Aktif">AKTIF</option>
+                  <option value="Permanent">PERMANENT</option>
+                  <option value="Kontrak">KONTRAK</option>
+                  <option value="Harian">HARIAN</option>
+                  <option value="Non-Aktif">NON-AKTIF</option>
                 </select>
               </div>
             </div>
@@ -188,7 +191,7 @@ const newFotoFile = ref(null);
 const form = ref({
     nama: "", email: "", nip: "", departemen_id: "", role: "karyawan", nomor_hp: "",
     tempat_lahir: "", tanggal_lahir: "", jenis_kelamin: "", alamat: "",
-    is_active: 1, password: null, foto_profil: null,
+    status_kerja: "Aktif", password: null, foto_profil: null, // Mengganti is_active ke status_kerja
 });
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -205,7 +208,6 @@ const handleFileUpload = (e) => {
 
 const handleImageError = (e) => { e.target.src = '/default-user-avatar.png'; };
 
-// RESET PASSWORD LOGIC
 const resetPasswordToDefault = () => {
     if (!form.value.tanggal_lahir) {
         apiError.value = "Isi Tanggal Lahir terlebih dahulu untuk reset password.";
@@ -225,8 +227,6 @@ const fetchData = async () => {
         ]);
 
         const d = karyawanRes.data.data;
-        
-        // PENTING: Paksa ambil string YYYY-MM-DD murni dari database
         const cleanDateFromDB = d.tanggal_lahir ? d.tanggal_lahir.substring(0, 10) : "";
 
         form.value = {
@@ -237,10 +237,10 @@ const fetchData = async () => {
             role: d.role,
             nomor_hp: d.nomor_hp || "",
             tempat_lahir: d.tempat_lahir || "",
-            tanggal_lahir: cleanDateFromDB, // Sinkronisasi aman
+            tanggal_lahir: cleanDateFromDB,
             jenis_kelamin: d.jenis_kelamin || "L",
             alamat: d.alamat || "",
-            is_active: d.is_active ? 1 : 0,
+            status_kerja: d.status_kerja || "Aktif", // Ambil data status_kerja
             foto_profil: d.foto_profil,
             password: null
         };
@@ -257,35 +257,46 @@ const updateKaryawan = async () => {
     errors.value = {};
     apiError.value = null;
     
+    // Gunakan FormData karena kita mengirim FILE (foto)
     const formData = new FormData();
-    formData.append('_method', 'POST'); 
     
+    /** * PENTING: 
+     * Saat mengirim FormData yang berisi file di Laravel untuk UPDATE, 
+     * kita harus menggunakan metode POST tetapi menyisipkan _method = 'PUT' 
+     * di dalam body agar Laravel mengenalinya sebagai request Update.
+     */
+    formData.append('_method', 'PUT'); 
+
     formData.append('nama', form.value.nama); 
     formData.append('email', form.value.email);
     formData.append('nip', form.value.nip);
     formData.append('departemen_id', form.value.departemen_id);
     formData.append('role', form.value.role);
-    formData.append('is_active', form.value.is_active);
-    
-    // Pastikan No HP & Alamat terkirim dengan string murni
+    formData.append('status_kerja', form.value.status_kerja);
     formData.append('nomor_hp', form.value.nomor_hp || '');
     formData.append('alamat', form.value.alamat || '');
-    
     formData.append('tempat_lahir', form.value.tempat_lahir || '');
-    formData.append('tanggal_lahir', form.value.tanggal_lahir); // Kirim string murni YYYY-MM-DD
+    formData.append('tanggal_lahir', form.value.tanggal_lahir);
+    formData.append('jenis_kelamin', form.value.jenis_kelamin);
     
-    if (form.value.jenis_kelamin) formData.append('jenis_kelamin', form.value.jenis_kelamin);
     if (form.value.password) formData.append('password', form.value.password);
     if (newFotoFile.value) formData.append('foto', newFotoFile.value);
 
     try {
-        await api.post(`/admin/karyawan/${route.params.id}`, formData);
+        // Gunakan axios.post (Bukan axios.put) karena FormData + File 
+        // hanya bisa dikirim lewat POST di banyak lingkungan server
+        await api.post(`/admin/karyawan/${route.params.id}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        
         router.push(`/admin/karyawan/${route.params.id}`);
     } catch (err) {
         if (err.response?.status === 422) {
             errors.value = err.response.data.errors;
         } else {
-            apiError.value = "Gagal memperbarui data pusat.";
+            apiError.value = "Gagal memperbarui data (Error: " + err.response?.status + ")";
         }
     } finally {
         loading.value = false;

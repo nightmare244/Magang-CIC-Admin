@@ -1,182 +1,165 @@
 <template>
-  <div class="min-h-screen bg-[#FDFDFD] dark:bg-[#0a0c0a] font-poppins pb-32 overflow-x-hidden transition-colors duration-300">
+  <div class="min-h-screen bg-slate-50 dark:bg-[#080908] font-poppins pb-32 transition-colors duration-500 overflow-x-hidden">
     
-    <header class="bg-[#2d4a3e] pt-12 pb-24 px-8 rounded-b-[4rem] shadow-xl text-white relative overflow-hidden">
-      <div class="absolute -right-10 -top-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl"></div>
-      <div class="relative z-10 text-center">
-        <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-emerald-300 mb-2">Internal Service</p>
-        <h1 class="text-3xl font-bold tracking-tight">Absensi Karyawan</h1>
-        <p class="text-[11px] opacity-70 mt-1 font-medium italic">Ciwangun Indah Camp</p>
+    <header class="relative pt-14 pb-24 px-6 overflow-hidden">
+      <div 
+        class="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat scale-110"
+        style="background-image: url('/images/background.jpg'); filter: blur(1px);" 
+      ></div>
+      <div class="absolute inset-0 z-10 bg-gradient-to-br from-[#1e332a]/95 via-[#1e332a]/85 to-[#1e332a]/40 dark:from-[#0a0f0d]/98 dark:via-[#0a0f0d]/90 dark:to-transparent"></div>
+      
+      <div class="relative z-20 max-w-md mx-auto">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl">
+            <QrCode class="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <p class="text-[11px] font-medium text-emerald-400/90 leading-none mb-1 capitalize tracking-wide">portal kehadiran</p>
+            <h1 class="text-xl font-bold tracking-tight text-white capitalize">Scan Absensi</h1>
+          </div>
+        </div>
       </div>
     </header>
 
-    <div class="max-w-md mx-auto px-6 -mt-12 relative z-20">
+    <div class="max-w-md mx-auto px-6 -mt-10 relative z-30">
       
-      <div v-if="step === 'scan'" class="animate-fade-in-up">
-        <div class="bg-white dark:bg-[#121512] rounded-[3.5rem] p-8 shadow-2xl border border-slate-50 dark:border-white/5 text-center">
+      <div v-if="step === 'scan'" class="animate-fade-in-up space-y-5">
+        
+        <div class="bg-white dark:bg-[#111311] rounded-[2.5rem] p-4 shadow-sm border border-slate-100 dark:border-white/5 space-y-5">
           
-          <div class="flex bg-slate-100 dark:bg-white/5 p-1 rounded-2xl mb-6">
-            <button @click="showManual = false" :class="!showManual ? 'bg-white dark:bg-emerald-600 shadow-sm text-[#2d4a3e] dark:text-white' : 'text-slate-400'" class="flex-1 py-2 text-[10px] font-bold uppercase rounded-xl transition-all">Scan QR</button>
-            <button @click="showManual = true" :class="showManual ? 'bg-white dark:bg-emerald-600 shadow-sm text-[#2d4a3e] dark:text-white' : 'text-slate-400'" class="flex-1 py-2 text-[10px] font-bold uppercase rounded-xl transition-all">Input Manual</button>
-          </div>
+          <div class="relative overflow-hidden rounded-[2rem] bg-black aspect-square shadow-inner border-4 border-slate-50 dark:border-white/5">
+            <button @click="toggleCamera" class="absolute top-4 right-4 z-50 bg-[#1e332a]/40 backdrop-blur-md p-2.5 rounded-2xl border border-white/20 text-white active:scale-95 transition-all">
+              <SwitchCamera class="w-5 h-5" />
+            </button>
 
-          <div v-if="!showManual" class="space-y-4">
-            <div class="relative overflow-hidden rounded-[3rem] bg-black aspect-square shadow-xl border-[8px] border-[#F8FAFC] dark:border-[#1a1d19]">
-              <qrcode-stream
-                :constraints="{ facingMode: 'user' }"
-                :formats="['qr_code']"
-                :track="paintOutline"
-                @detect="onDetect"
-                @error="onCameraError"
-                class="h-full w-full"
-              >
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="w-64 h-64 border-2 border-emerald-500/30 rounded-3xl relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-1 bg-emerald-400 shadow-[0_0_15px_#10b981] animate-scan-line"></div>
-                  </div>
+            <qrcode-stream
+              :constraints="{ facingMode: facingMode }"
+              :formats="['qr_code']"
+              :track="paintOutline"
+              @detect="onDetect"
+              @error="onCameraError"
+              class="h-full w-full"
+            >
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="w-64 h-64 border-2 border-white/10 rounded-[2.5rem] relative">
+                  <div class="absolute top-0 left-0 w-full h-1 bg-emerald-400 shadow-[0_0_20px_#10b981] animate-scan-line"></div>
+                  <div class="absolute -top-1 -left-1 w-10 h-10 border-t-4 border-l-4 border-emerald-500 rounded-tl-3xl opacity-60"></div>
+                  <div class="absolute -top-1 -right-1 w-10 h-10 border-t-4 border-r-4 border-emerald-500 rounded-tr-3xl opacity-60"></div>
+                  <div class="absolute -bottom-1 -left-1 w-10 h-10 border-b-4 border-l-4 border-emerald-500 rounded-bl-3xl opacity-60"></div>
+                  <div class="absolute -bottom-1 -right-1 w-10 h-10 border-b-4 border-r-4 border-emerald-500 rounded-br-3xl opacity-60"></div>
                 </div>
-              </qrcode-stream>
-
-              <div v-if="cameraFailed" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 p-8">
-                 <AlertCircle class="w-12 h-12 text-rose-500 mb-2" />
-                 <p class="text-[10px] font-bold uppercase text-slate-400 text-center">Kamera Tidak Aktif atau Izin Ditolak</p>
               </div>
-            </div>
+            </qrcode-stream>
 
-            <div :class="statusClass" class="py-3 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 border min-h-[44px]">
-              <div v-if="qrStatus === 'searching'" class="w-2 h-2 bg-slate-400 rounded-full animate-pulse"></div>
-              <div v-if="qrStatus === 'found'" class="w-2 h-2 bg-amber-500 rounded-full animate-ping"></div>
-              <div v-if="qrStatus === 'detected'" class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
-              <span class="text-[10px] font-bold uppercase tracking-widest">{{ statusText }}</span>
+            <div v-if="cameraFailed" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 p-8 text-center">
+              <AlertCircle class="w-10 h-10 text-rose-500 mb-3" />
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">gagal memuat kamera</p>
             </div>
           </div>
 
-          <div v-else class="animate-fade-in py-4">
-             <div class="bg-emerald-50 dark:bg-emerald-500/5 p-6 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-500/10">
-                <Keyboard class="w-10 h-10 text-emerald-600 mx-auto mb-4" />
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-6 leading-relaxed font-medium">
-                   Masukkan kode akses yang diberikan oleh admin kantor.
-                </p>
-                <input 
-                  v-model="qrCodeManual" 
-                  type="text" 
-                  class="input-cic mb-4 uppercase" 
-                  placeholder="KODE MANUAL" 
-                />
-                <button @click="handleManualInput" class="btn-cic-primary w-full py-5 shadow-lg shadow-emerald-900/20">
-                  Konfirmasi Kehadiran
-                </button>
-             </div>
+          <div class="relative flex items-center justify-center py-2">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-slate-100 dark:border-white/5"></div>
+            </div>
+            <span class="relative px-4 bg-white dark:bg-[#111311] text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.3em]">atau</span>
           </div>
-          
-          <button @click="refreshPage" class="mt-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2 mx-auto transition-opacity hover:opacity-70">
-             <RefreshCw class="w-3 h-3" /> Muat Ulang Kamera
-          </button>
+
+          <div class="space-y-4 pb-2">
+            <div class="relative group">
+              <div class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors">
+                <Hash class="w-5 h-5 opacity-40" />
+              </div>
+              <input 
+                v-model="qrCodeManual" 
+                type="text" 
+                class="w-full bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-2xl pl-14 pr-6 py-4.5 text-sm font-bold outline-none focus:border-emerald-500/50 transition-all dark:text-white uppercase tracking-[0.3em]" 
+                placeholder="KODE-AKSES" 
+              />
+            </div>
+
+            <button 
+              @click="handleManualInput" 
+              class="relative group overflow-hidden w-full bg-[#1e332a] text-white py-5 rounded-[2rem] font-bold text-[13px] uppercase tracking-[0.15em] transition-all duration-300 active:scale-95 shadow-lg dark:shadow-emerald-900/20"
+            >
+              <div class="flex items-center justify-center gap-3 relative z-10">
+                <span class="tracking-[0.2em] font-black text-[11px]">konfirmasi kehadiran</span>
+                <ArrowRight class="w-4 h-4 text-emerald-400" />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-blue-50/50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-500/10 rounded-[2rem] p-5 flex items-center gap-4">
+          <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20">
+            <MapPin class="w-5 h-5" />
+          </div>
+          <p class="text-[10px] text-blue-900/70 dark:text-blue-400 font-black leading-relaxed lowercase tracking-wider">
+            lokasi gps aktif. pastikan anda berada di area kerja ciwangun indah camp.
+          </p>
         </div>
       </div>
 
-      <div v-else class="animate-fade-in-up bg-white dark:bg-[#121512] rounded-[3.5rem] p-12 text-center shadow-2xl min-h-[450px] flex flex-col justify-center items-center border border-white dark:border-white/5">
-        
-        <div v-if="step === 'process'" class="space-y-8">
-          <div class="relative w-28 h-28 mx-auto">
-            <div class="absolute inset-0 rounded-full border-4 border-[#2d4a3e]/10"></div>
-            <div class="absolute inset-0 rounded-full border-4 border-[#2d4a3e] border-t-transparent animate-spin"></div>
-            <MapPin class="w-8 h-8 absolute inset-0 m-auto text-[#2d4a3e] animate-bounce" />
+      <div v-else class="animate-fade-in-up">
+        <div class="bg-white dark:bg-[#111311] rounded-[3rem] p-10 text-center shadow-sm border border-slate-50 dark:border-white/5 min-h-[400px] flex flex-col justify-center items-center">
+          <div v-if="step === 'process'" class="space-y-6">
+            <div class="w-16 h-16 border-4 border-emerald-500/10 border-t-emerald-500 rounded-full animate-spin mx-auto"></div>
+            <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">{{ processingText }}</p>
           </div>
-          <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400 animate-pulse">{{ processingText }}</p>
-        </div>
 
-        <div v-if="step === 'result' && apiResult" class="space-y-10 w-full">
-          <div :class="apiResult.type === 'success' ? 'text-emerald-500' : 'text-rose-500'">
-            <CheckCircle v-if="apiResult.type === 'success'" class="w-24 h-24 mx-auto" />
-            <XCircle v-else class="w-24 h-24 mx-auto" />
-          </div>
-          <div>
-            <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2 uppercase tracking-tighter">{{ apiResult.type === 'success' ? 'Otorisasi Berhasil' : 'Otorisasi Gagal' }}</h3>
-            <div class="bg-slate-50 dark:bg-white/5 p-6 rounded-[2rem] text-[12px] text-slate-500 font-medium leading-relaxed">
-              {{ apiResult.message }}
+          <div v-if="step === 'result' && apiResult" class="w-full space-y-8 animate-fade-in">
+            <div class="flex flex-col items-center">
+              <div :class="apiResult.type === 'success' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-500'" class="w-20 h-20 rounded-[2rem] flex items-center justify-center mb-6 border border-current/10">
+                <component :is="apiResult.type === 'success' ? CheckCircle : XCircle" class="w-10 h-10" />
+              </div>
+              <h2 class="text-xl font-bold text-slate-800 dark:text-white tracking-tight uppercase">{{ apiResult.type === 'success' ? 'berhasil' : 'gagal' }}</h2>
             </div>
+            <div class="bg-slate-50 dark:bg-white/5 rounded-[2rem] p-6 text-left border border-slate-100 dark:border-white/5">
+              <p class="text-[12px] text-slate-600 dark:text-slate-300 font-medium italic">"{{ apiResult.message }}"</p>
+            </div>
+            <button @click="resetFlow" class="w-full bg-[#1e332a] text-white py-4.5 rounded-[2rem] font-bold text-[11px] uppercase tracking-widest active:scale-95 transition-all">tutup</button>
           </div>
-          <button @click="resetFlow" class="btn-cic-primary w-full py-5 uppercase tracking-[0.2em]">Kembali</button>
         </div>
       </div>
 
     </div>
+
+    <footer class="pt-10 pb-6 text-center">
+      <p class="text-[10px] text-slate-400 dark:text-slate-600 font-black tracking-[0.3em] uppercase">ciwangun indah camp</p>
+    </footer>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { QrcodeStream } from "vue-qrcode-reader";
 import api from "@/services/api";
 import Swal from 'sweetalert2';
 import { 
-  RefreshCw, TreePine, AlertCircle, 
-  MapPin, CheckCircle, XCircle, Keyboard 
+  RefreshCw, AlertCircle, MapPin, CheckCircle, XCircle, 
+  SwitchCamera, Hash, ArrowRight, QrCode
 } from "lucide-vue-next";
 
-// --- STATE ---
 const step = ref('scan');
-const showManual = ref(false);
 const cameraFailed = ref(false);
 const qrCodeManual = ref('');
 const apiResult = ref(null);
 const processingText = ref('');
 const isProcessing = ref(false);
-const qrStatus = ref('searching'); // searching, found, detected
+const facingMode = ref('environment');
 
-// --- COMPUTED STATUS ---
-const statusText = computed(() => {
-  if (qrStatus.value === 'searching') return 'Mencari QR Code...';
-  if (qrStatus.value === 'found') return 'QR Ditemukan! Menstabilkan...';
-  if (qrStatus.value === 'detected') return 'QR Berhasil Dibaca!';
-  return '';
-});
-
-const statusClass = computed(() => {
-  if (qrStatus.value === 'searching') return 'bg-slate-50 border-slate-100 text-slate-400';
-  if (qrStatus.value === 'found') return 'bg-amber-50 border-amber-200 text-amber-600';
-  if (qrStatus.value === 'detected') return 'bg-emerald-50 border-emerald-200 text-emerald-600';
-  return '';
-});
-
-// --- METHODS ---
-const paintOutline = (detectedCodes, ctx) => {
-  if (detectedCodes.length > 0) {
-    if (qrStatus.value !== 'detected') qrStatus.value = 'found';
-    for (const { boundingBox: { x, y, width, height } } of detectedCodes) {
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = '#10b981';
-      ctx.strokeRect(x, y, width, height);
-    }
-  } else {
-    if (!isProcessing.value) qrStatus.value = 'searching';
-  }
-};
+const toggleCamera = () => { facingMode.value = facingMode.value === 'environment' ? 'user' : 'environment'; };
 
 const onDetect = async (detectedCodes) => {
   if (isProcessing.value || !detectedCodes.length) return;
-
-  const result = detectedCodes[0];
-  const qrValue = result.rawValue || result.content;
-
+  const qrValue = detectedCodes[0].rawValue || detectedCodes[0].content;
   if (qrValue) {
-    qrStatus.value = 'detected';
     isProcessing.value = true;
-    
-    // Feedback visual getar jika di HP
     if (navigator.vibrate) navigator.vibrate(100);
-
-    setTimeout(() => {
-      processAbsensi(qrValue.trim().toUpperCase());
-    }, 800);
+    processAbsensi(qrValue.trim().toUpperCase());
   }
 };
 
-const onCameraError = (err) => {
-  console.error(err);
-  cameraFailed.value = true;
-};
+const onCameraError = () => { cameraFailed.value = true; };
 
 const handleManualInput = () => {
   if (!qrCodeManual.value.trim() || isProcessing.value) return;
@@ -186,14 +169,11 @@ const handleManualInput = () => {
 
 const processAbsensi = (qrValue) => {
   step.value = 'process';
-  processingText.value = 'Sinkronisasi GPS...';
+  processingText.value = 'menentukan lokasi...';
   
   navigator.geolocation.getCurrentPosition(async (pos) => {
     try {
-      processingText.value = 'Menyiapkan Keamanan...';
-      await api.get('http://localhost:8000/sanctum/csrf-cookie');
-      
-      processingText.value = 'Memproses Absensi...';
+      processingText.value = 'sinkronisasi server...';
       const response = await api.post("/karyawan/absensi", {
         qr_code: qrValue,
         latitude: pos.coords.latitude,
@@ -203,78 +183,32 @@ const processAbsensi = (qrValue) => {
       const action = response.data.action === 'in' ? 'Masuk' : 'Pulang';
       apiResult.value = { 
         type: 'success', 
-        message: `Absensi ${action} berhasil dicatat pada pukul ${response.data.data.jam_masuk || response.data.data.jam_pulang}` 
+        message: `Presensi ${action} anda telah divalidasi sistem pada pukul ${response.data.data.jam_masuk || response.data.data.jam_pulang}.` 
       };
-      
-      Swal.fire({
-        title: 'Berhasil!',
-        text: `Absen ${action} sukses.`,
-        icon: 'success',
-        confirmButtonColor: '#2d4a3e'
-      });
-
     } catch (e) {
       apiResult.value = { 
         type: 'error', 
-        message: e.response?.data?.message || 'Gagal sinkronisasi data ke server.' 
+        message: e.response?.data?.message || 'Otorisasi gagal. Pastikan kode benar dan anda di lokasi.' 
       };
-    } finally {
-      step.value = 'result';
-    }
-  }, (err) => {
-    apiResult.value = { 
-      type: 'error', 
-      message: 'Gagal mendapatkan lokasi. Pastikan GPS aktif dan izin diberikan.' 
-    };
+    } finally { step.value = 'result'; }
+  }, () => {
+    apiResult.value = { type: 'error', message: 'Izin lokasi (GPS) wajib aktif.' };
     step.value = 'result';
-  }, { 
-    enableHighAccuracy: false,
-    timeout: 10000 
-  });
+  }, { enableHighAccuracy: true });
 };
 
-const resetFlow = () => {
-  step.value = 'scan';
-  isProcessing.value = false;
-  qrStatus.value = 'searching';
-  qrCodeManual.value = '';
+const resetFlow = () => { 
+  step.value = 'scan'; 
+  isProcessing.value = false; 
+  qrCodeManual.value = ''; 
 };
-
-const refreshPage = () => window.location.reload();
 </script>
 
 <style scoped lang="postcss">
-.input-cic { 
-  @apply w-full bg-slate-50 dark:bg-white/5 border-2 border-slate-100 dark:border-white/10 rounded-2xl px-6 py-4 text-center font-black outline-none focus:border-emerald-500 transition-all dark:text-white; 
-}
-
-.btn-cic-primary { 
-  @apply bg-[#2d4a3e] text-white rounded-[2rem] font-bold text-[10px] tracking-[0.2em] transition-all uppercase shadow-md active:scale-95; 
-}
-
-@keyframes scan-line { 
-  0% { top: 0%; } 
-  100% { top: 100%; } 
-}
-
-.animate-scan-line { 
-  position: absolute; 
-  animation: scan-line 2.5s linear infinite; 
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-:deep(video) { 
-  width: 100% !important; 
-  height: 100% !important; 
-  object-fit: cover !important; 
-  border-radius: 2.5rem !important; 
-}
+@keyframes scan-line { 0% { top: 0%; opacity: 0; } 20%, 80% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+.animate-scan-line { animation: scan-line 2.5s ease-in-out infinite; }
+.animate-fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+:deep(video) { width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 1.8rem !important; }
+* { -webkit-tap-highlight-color: transparent; }
 </style>

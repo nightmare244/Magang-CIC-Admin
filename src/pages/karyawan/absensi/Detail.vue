@@ -1,92 +1,100 @@
 <template>
-  <div class="min-h-screen bg-[#FDFDFD] dark:bg-[#0a0c0a] font-poppins pb-32 overflow-x-hidden">
-    <header class="bg-[#2d4a3e] pt-12 pb-20 px-8 rounded-b-[4rem] shadow-2xl text-white relative overflow-hidden">
-      <div class="absolute -right-10 -top-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl"></div>
-      <div class="absolute left-6 top-10 opacity-10">
-        <ClipboardList class="w-20 h-20" />
-      </div>
+  <div class="min-h-screen bg-slate-50 dark:bg-[#080908] font-poppins pb-32 transition-colors duration-500 overflow-x-hidden">
+    
+    <header class="relative pt-14 pb-24 px-6 overflow-hidden">
+      <div 
+        class="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat scale-110"
+        style="background-image: url('/images/background.jpg'); filter: blur(1px);" 
+      ></div>
+      <div class="absolute inset-0 z-10 bg-gradient-to-br from-[#1e332a]/95 via-[#1e332a]/85 to-[#1e332a]/40 dark:from-[#0a0f0d]/98 dark:via-[#0a0f0d]/90 dark:to-transparent"></div>
       
-      <div class="relative z-10 text-center">
-        <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-emerald-300 mb-2">Presensi Detail</p>
-        <h1 class="text-3xl font-bold tracking-tight">Rincian Kehadiran</h1>
-        <p class="text-[11px] opacity-70 mt-1 font-medium italic">Ciwangun Indah Camp - Alam Menyejukkan</p>
+      <div class="relative z-20 max-w-md mx-auto">
+        <div class="flex items-center gap-4">
+          <button 
+            @click="$router.back()" 
+            class="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl text-white active:scale-90 transition-all"
+          >
+            <ChevronLeft class="w-6 h-6" />
+          </button>
+          <div>
+            <p class="text-[11px] font-medium text-emerald-400/90 leading-none mb-1 capitalize tracking-wide">portal presensi</p>
+            <h1 class="text-xl font-bold tracking-tight text-white capitalize">Detail kehadiran</h1>
+          </div>
+        </div>
       </div>
     </header>
 
-    <div class="max-w-md mx-auto px-6 -mt-12 relative z-20">
-      <div v-if="loading" class="bg-white dark:bg-[#121512] rounded-[3.5rem] p-12 text-center shadow-xl border border-white dark:border-white/5">
-        <div class="relative w-20 h-20 mx-auto mb-6">
-          <div class="absolute inset-0 border-4 border-[#2d4a3e]/10 rounded-[2rem]"></div>
-          <div class="absolute inset-0 border-4 border-[#2d4a3e] border-t-transparent rounded-[2rem] animate-spin"></div>
-          <RefreshCw class="w-8 h-8 absolute inset-0 m-auto text-[#2d4a3e] animate-pulse" />
-        </div>
-        <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Menyusun Informasi...</p>
+    <div class="max-w-md mx-auto px-6 -mt-10 relative z-30 space-y-6">
+      
+      <div v-if="loading" class="bg-white dark:bg-[#111311] rounded-[2.5rem] p-12 text-center shadow-sm border border-slate-100 dark:border-white/5">
+        <div class="w-10 h-10 border-4 border-emerald-500/10 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest">sinkronisasi...</p>
       </div>
 
-      <div v-else-if="apiError" class="animate-fade-in-up p-8 bg-white dark:bg-[#121512] rounded-[3rem] shadow-xl text-center border border-rose-100">
-        <AlertCircle class="w-12 h-12 text-rose-500 mx-auto mb-4" />
-        <p class="text-[12px] text-rose-600 font-bold uppercase tracking-widest mb-2">Gagal Memuat Detail</p>
-        <p class="text-[11px] text-slate-500 leading-relaxed mb-6">{{ apiError }}</p>
-        <button @click="$router.back()" class="btn-cic-primary w-full py-4 text-[11px]">Kembali</button>
-      </div>
-
-      <div v-else-if="data" class="space-y-6 animate-fade-in-up">
-        <div class="bg-white dark:bg-[#121512] rounded-[3rem] p-8 shadow-xl border border-slate-50 dark:border-white/5">
-          <div class="text-center pb-6 border-b border-slate-100 dark:border-white/5">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Hari & Tanggal</p>
-            <h2 class="text-lg font-bold text-[#2d4a3e] dark:text-emerald-400">{{ formatDate(data.tanggal) }}</h2>
-            <div class="mt-4 flex justify-center">
-              <span :class="badgeClass(data.status_hari)" class="px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border">
-                {{ data.status_hari }}
-              </span>
+      <div v-else-if="data" class="bg-white dark:bg-[#111311] rounded-[2.5rem] p-5 shadow-sm border border-slate-100 dark:border-white/5 space-y-5 animate-fade-in-up">
+        
+        <div :class="statusTheme(data.status_hari).card" class="p-5 rounded-[2rem] flex items-center justify-between border transition-all duration-500">
+          <div class="flex items-center gap-4">
+            <div :class="statusTheme(data.status_hari).iconBg" class="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm text-white">
+              <CalendarCheck class="w-6 h-6" />
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[14px] font-bold text-slate-800 dark:text-white leading-tight capitalize">{{ data.status_hari }}</span>
+              <span class="text-[10px] text-slate-400 font-medium capitalize">status kehadiran</span>
             </div>
           </div>
+          <span :class="statusTheme(data.status_hari).badge" class="px-4 py-2 rounded-xl text-[10px] font-bold capitalize shadow-sm">
+            {{ data.status_hari }}
+          </span>
+        </div>
 
-          <div class="grid grid-cols-2 gap-4 mt-8">
-            <div class="p-5 rounded-[2rem] bg-slate-50 dark:bg-white/5 border border-slate-100 text-center">
-              <LogIn class="w-4 h-4 text-emerald-500 mx-auto mb-2" />
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Masuk</p>
-              <p :class="statusMasukClass(data.status_masuk)" class="text-base font-black mt-1">{{ data.jam_masuk || '--:--' }}</p>
-            </div>
-            <div class="p-5 rounded-[2rem] bg-slate-50 dark:bg-white/5 border border-slate-100 text-center">
-              <LogOut class="w-4 h-4 text-rose-400 mx-auto mb-2" />
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Pulang</p>
-              <p class="text-base font-black text-slate-800 dark:text-white mt-1">{{ data.jam_pulang || '--:--' }}</p>
-            </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-slate-50 dark:bg-white/5 p-5 rounded-[2rem] border border-slate-100 dark:border-white/5">
+            <p class="text-[10px] font-bold text-slate-400 capitalize mb-1">Hari & Tanggal</p>
+            <p class="text-[12px] font-bold text-slate-700 dark:text-slate-200">{{ formatDate(data.tanggal) }}</p>
+          </div>
+          <div class="bg-slate-50 dark:bg-white/5 p-5 rounded-[2rem] border border-slate-100 dark:border-white/5">
+            <p class="text-[10px] font-bold text-slate-400 capitalize mb-1">Keterangan</p>
+            <p :class="statusMasukClass(data.status_masuk)" class="text-[12px] font-bold capitalize">{{ data.status_masuk || 'Tepat Waktu' }}</p>
           </div>
         </div>
 
-        <div class="bg-white dark:bg-[#121512] rounded-[3rem] p-4 shadow-xl border border-slate-50 dark:border-white/5 overflow-hidden">
-          <div class="flex items-center gap-3 px-4 py-3 mb-1">
-            <MapPin class="w-5 h-5 text-[#2d4a3e]" />
-            <h3 class="text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300">Lokasi Presensi</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-slate-50 dark:bg-white/5 p-5 rounded-[2rem] border border-slate-100 dark:border-white/5 flex flex-col items-center">
+            <p class="text-[10px] font-bold text-slate-400 capitalize mb-1">Jam Masuk</p>
+            <p class="text-xl font-bold text-emerald-500 tracking-wide">{{ data.jam_masuk || '--:--' }}</p>
           </div>
-          
-          <div id="map-karyawan" class="h-64 w-full rounded-[2.5rem] border-2 border-slate-50 z-10 bg-slate-100"></div>
-          
-          <div class="p-4 space-y-3">
-            <div class="flex items-start gap-3">
-              <div class="w-2 h-2 mt-1 rounded-full bg-emerald-500"></div>
-              <div class="flex-1">
-                <p class="text-[8px] font-bold text-slate-400 uppercase">Koordinat Masuk</p>
-                <p class="text-[10px] font-mono break-all">{{ data.lokasi_masuk || '-' }}</p>
-              </div>
-            </div>
-            <div v-if="data.lokasi_pulang" class="flex items-start gap-3">
-              <div class="w-2 h-2 mt-1 rounded-full bg-rose-500"></div>
-              <div class="flex-1">
-                <p class="text-[8px] font-bold text-slate-400 uppercase">Koordinat Pulang</p>
-                <p class="text-[10px] font-mono break-all">{{ data.lokasi_pulang || '-' }}</p>
-              </div>
-            </div>
+          <div class="bg-slate-50 dark:bg-white/5 p-5 rounded-[2rem] border border-slate-100 dark:border-white/5 flex flex-col items-center">
+            <p class="text-[10px] font-bold text-slate-400 capitalize mb-1">Jam Pulang</p>
+            <p class="text-xl font-bold text-slate-700 dark:text-slate-200 tracking-wide">{{ data.jam_pulang || '--:--' }}</p>
           </div>
         </div>
 
-        <button @click="$router.back()" class="btn-cic-secondary w-full flex items-center justify-center gap-3 py-5">
-          <ArrowLeft class="w-4 h-4" /> Kembali ke Riwayat
+        <div class="bg-slate-50 dark:bg-white/5 rounded-[2.5rem] p-2 border border-slate-100 dark:border-white/5 overflow-hidden">
+          <div class="flex items-center gap-3 px-4 py-3">
+            <MapPin class="w-4 h-4 text-emerald-500 opacity-60" />
+            <p class="text-[10px] font-bold text-slate-400 capitalize">Titik Lokasi Presensi</p>
+          </div>
+          <div class="px-2 pb-2">
+            <div id="map-karyawan" class="h-48 w-full rounded-[2rem] bg-slate-200 dark:bg-slate-800 border border-white/10 shadow-inner"></div>
+          </div>
+          <div class="p-4 pt-1">
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium italic leading-relaxed">
+              "{{ data.lokasi_masuk || 'lokasi tidak terekam' }}"
+            </p>
+          </div>
+        </div>
+
+        <button @click="$router.back()" class="w-full flex items-center justify-center gap-3 py-5 bg-[#1e332a] text-white rounded-[2rem] font-bold text-[11px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
+          <ArrowLeft class="w-4 h-4" /> kembali ke riwayat
         </button>
+
       </div>
     </div>
+
+    <footer class="pt-10 pb-6 text-center">
+      <p class="text-[10px] text-slate-400 dark:text-slate-600 font-medium tracking-widest capitalize">ciwangun indah camp</p>
+    </footer>
   </div>
 </template>
 
@@ -95,96 +103,70 @@ import { ref, onMounted, nextTick } from "vue";
 import api from '@/services/api';
 import { useRoute } from "vue-router";
 import { 
-  ClipboardList, RefreshCw, AlertCircle, 
-  MapPin, LogIn, LogOut, ArrowLeft 
+  ChevronLeft, MapPin, ArrowLeft, 
+  CalendarCheck, Clock, AlertCircle
 } from "lucide-vue-next";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 const route = useRoute();
 const loading = ref(true);
-const apiError = ref(null);
 const data = ref(null);
 let map = null;
 
-function badgeClass(status) {
-    if (!status) return 'bg-slate-400 text-white border-slate-300';
-    const s = status.toLowerCase();
-    if (s.includes('hadir')) return 'bg-emerald-500 text-white border-emerald-400';
-    if (s.includes('izin') || s.includes('sakit')) return 'bg-amber-500 text-white border-amber-400';
-    if (s.includes('alpa')) return 'bg-rose-500 text-white border-rose-400';
-    return 'bg-slate-400 text-white border-slate-300';
-}
+const statusTheme = (status) => {
+  const s = status?.toLowerCase() || '';
+  if (s.includes('hadir')) return { 
+    card: 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-100/50 dark:border-emerald-500/10',
+    iconBg: 'bg-emerald-500 text-white shadow-lg shadow-emerald-200/50',
+    badge: 'bg-emerald-500 text-white'
+  };
+  if (s.includes('alpa')) return { 
+    card: 'bg-rose-50/50 dark:bg-rose-500/5 border-rose-100/50 dark:border-rose-500/10',
+    iconBg: 'bg-rose-500 text-white shadow-lg shadow-rose-200/50',
+    badge: 'bg-rose-500 text-white'
+  };
+  return { 
+    card: 'bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10',
+    iconBg: 'bg-amber-500 text-white shadow-lg shadow-amber-200/50',
+    badge: 'bg-amber-500 text-white'
+  };
+};
 
 function statusMasukClass(status) {
-    if (!status) return 'text-slate-800 dark:text-white';
+    if (!status) return 'text-emerald-500';
     return status.toLowerCase() === 'terlambat' ? 'text-rose-500' : 'text-emerald-500';
 }
 
 function formatDate(dateString) {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('id-ID', { dateStyle: 'full' }).format(date);
+    return new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(date);
 }
 
-// Fungsi Inisialisasi Peta
 const initMap = () => {
-  const hasIn = data.value.lokasi_masuk;
-  const hasOut = data.value.lokasi_pulang; // Mengambil data lokasi_pulang dari backend
-
-  if (!hasIn && !hasOut) return;
-
+  if (!data.value?.lokasi_masuk) return;
   nextTick(() => {
     setTimeout(() => {
-      // Fokus peta tetap pada lokasi masuk sebagai titik awal
-      const primaryCoords = (hasIn || hasOut).split(',').map(c => parseFloat(c.trim()));
-      
+      const coords = data.value.lokasi_masuk.split(',').map(c => parseFloat(c.trim()));
       if (map) map.remove();
-
-      map = L.map('map-karyawan', { zoomControl: false }).setView(primaryCoords, 16);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-      const markers = [];
-
-      // Marker Masuk (Warna Hijau)
-      if (hasIn) {
-        const inCoords = hasIn.split(',').map(c => parseFloat(c.trim()));
-        L.circleMarker(inCoords, {
-          radius: 8, color: '#10b981', fillColor: '#10b981', fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Masuk:</b> ${data.value.jam_masuk}`);
-        markers.push(inCoords);
-      }
-
-      // Marker Pulang (Warna Merah)
-      if (hasOut) {
-        const outCoords = hasOut.split(',').map(c => parseFloat(c.trim()));
-        L.circleMarker(outCoords, {
-          radius: 8, color: '#f43f5e', fillColor: '#f43f5e', fillOpacity: 0.8
-        }).addTo(map).bindPopup(`<b>Pulang:</b> ${data.value.jam_pulang}`);
-        markers.push(outCoords);
-      }
-
-      // Jika ada masuk & pulang, peta akan otomatis zoom out agar keduanya terlihat
-      if (markers.length > 1) {
-        map.fitBounds(L.latLngBounds(markers).pad(0.5));
-      }
-
-      map.invalidateSize();
-    }, 300);
+      map = L.map('map-karyawan', { zoomControl: false, attributionControl: false }).setView(coords, 16);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+      L.circleMarker(coords, { radius: 8, color: '#fff', weight: 3, fillColor: '#10b981', fillOpacity: 1 }).addTo(map);
+    }, 400);
   });
 };
 
 const loadDetail = async () => {
     loading.value = true;
-    apiError.value = null;
     try {
         const res = await api.get(`/karyawan/absensi/${route.params.id}`);
         data.value = res.data.data;
         initMap();
     } catch (err) {
-        apiError.value = err.response?.data?.message || "Data rincian presensi tidak dapat ditemukan.";
+        console.error(err);
     } finally {
-        loading.value = false;
+        setTimeout(() => { loading.value = false; }, 600);
     }
 };
 
@@ -192,18 +174,13 @@ onMounted(loadDetail);
 </script>
 
 <style scoped lang="postcss">
-.font-poppins { font-family: 'Poppins', sans-serif; }
-
-/* Menghilangkan logo leaflet agar bersih */
 :deep(.leaflet-control-attribution) { display: none; }
-
-.btn-cic-secondary {
-    @apply bg-white dark:bg-[#121512] text-[#2d4a3e] dark:text-emerald-500 rounded-[2.5rem] font-bold text-[11px] uppercase tracking-[0.2em] border border-slate-100 dark:border-white/5 shadow-md active:scale-95 transition-all;
+.animate-fade-in-up { 
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+  opacity: 0;
 }
-
-@keyframes fadeIn-up {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes fadeInUp { 
+  from { transform: translateY(30px); opacity: 0; } 
+  to { transform: translateY(0); opacity: 1; } 
 }
-.animate-fade-in-up { animation: fadeIn-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 </style>
