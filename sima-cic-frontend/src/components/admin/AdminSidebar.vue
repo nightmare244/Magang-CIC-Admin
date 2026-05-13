@@ -175,6 +175,7 @@ const navigationGroups = [
     links: [
       { name: "Pemasukan", icon: BanknoteArrowUp, to: "/admin/pemasukan" },
       { name: "Pengeluaran", icon: BanknoteArrowDown, to: "/admin/pengeluaran" },
+      { name: "Grafik Keuangan", icon: CircleDollarSign, to: "/admin/keuangan/grafik" },
     ]
   },
   {

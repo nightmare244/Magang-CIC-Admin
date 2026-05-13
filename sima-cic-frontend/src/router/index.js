@@ -52,6 +52,7 @@ import PengeluaranIndex from "@/pages/admin/keuangan/Pengeluaran/index.vue";
 import PengeluaranCreate from "@/pages/admin/keuangan/Pengeluaran/Create.vue";
 import PengeluaranEdit from "@/pages/admin/keuangan/Pengeluaran/Edit.vue";
 import PengeluaranDetail from "@/pages/admin/keuangan/Pengeluaran/Detail.vue";
+import GrafikKeuangan from "@/pages/admin/keuangan/grafik/index.vue";
 
 // ================= KARYAWAN PAGES =================
 import KaryawanDashboard from "@/pages/karyawan/dashboard/Dashboard.vue";
@@ -80,7 +81,7 @@ import KaryawanProfilChangePassword from "@/pages/karyawan/profil/ChangePassword
 import KaryawanProfilUploadPhoto from "@/pages/karyawan/profil/UploadPhoto.vue";
 
 const routes = [
-    { path: "/", redirect: "/landing" },
+    { path: "/", redirect: "/admin/dashboard" },
     {
         path: "/login",
         component: AuthLayout,
@@ -145,6 +146,9 @@ const routes = [
             { path: "pengeluaran/create", name: "admin.pengeluaran.create", component: PengeluaranCreate, meta: { title: "Tambah Pengeluaran" } },
             { path: "pengeluaran/:id", name: "admin.pengeluaran.detail", component: PengeluaranDetail, meta: { title: "Detail Pengeluaran" } },
             { path: "pengeluaran/:id/edit", name: "admin.pengeluaran.edit", component: PengeluaranEdit, meta: { title: "Edit Pengeluaran" } },
+            
+            // Keuangan - Grafik
+            { path: "keuangan/grafik", name: "admin.keuangan.grafik", component: GrafikKeuangan, meta: { title: "Dashboard Grafik Keuangan" } },
             
             // Absensi (Admin)
             { path: "absensi/settings", name: "admin.absensi.settings", component: AbsensiSettings, meta: { title: "Pengaturan Absensi" } },
@@ -259,3 +263,4 @@ router.afterEach(() => {
 });
 
 export default router;
+
