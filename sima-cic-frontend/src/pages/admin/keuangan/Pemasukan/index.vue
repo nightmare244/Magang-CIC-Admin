@@ -123,12 +123,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import api from '@/services/api'
 
 const pemasukans = ref([])
 const filterBulan = ref(new Date().toISOString().slice(0, 7))
 const filterTipe = ref('')
 const totalNominal = ref(0)
 const totalTiket = ref(0)
+const loading = ref(false)
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('id-ID').format(value)
@@ -151,48 +153,30 @@ const formatTipe = (tipe) => {
 const getTipeClass = (tipe) => {
   const classes = {
     'tiket_masuk': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-    'donasi': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    'donasi': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-green-300',
     'sponsor': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
     'lainnya': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
   }
   return classes[tipe] || 'bg-gray-100 text-gray-800'
 }
 
-const loadData = () => {
-  // Mock data - ganti dengan API call nanti
-  const mockData = [
-    {
-      id: 1,
-      nama_pemasukan: 'Tiket Masuk April',
-      tipe: 'tiket_masuk',
-      jumlah: 150,
-      nominal: 7500000,
-      tanggal_pemasukan: '2024-04-30',
-      keterangan: 'Penjualan tiket bulan April'
-    },
-    {
-      id: 2,
-      nama_pemasukan: 'Donasi Sosial',
-      tipe: 'donasi',
-      jumlah: 1,
-      nominal: 5000000,
-      tanggal_pemasukan: '2024-04-28',
-      keterangan: 'Donasi dari mitra'
-    },
-    {
-      id: 3,
-      nama_pemasukan: 'Sponsor Acara',
-      tipe: 'sponsor',
-      jumlah: 1,
-      nominal: 10000000,
-      tanggal_pemasukan: '2024-04-25',
-      keterangan: 'Sponsor event tahunan'
-    }
-  ]
-  
-  pemasukans.value = mockData
-  totalNominal.value = mockData.reduce((sum, p) => sum + p.nominal, 0)
-  totalTiket.value = mockData.filter(p => p.tipe === 'tiket_masuk').reduce((sum, p) => sum + p.jumlah, 0)
+const loadData = async () => {
+  loading.value = true
+  try {
+    const params = {}
+    if (filterBulan.value) params.bulan = filterBulan.value
+    if (filterTipe.value) params.tipe = filterTipe.value
+
+    const res = await api.get('/admin/pemasukan', { params })
+    pemasukans.value = res.data.data
+    
+    totalNominal.value = pemasukans.value.reduce((sum, p) => sum + Number(p.nominal), 0)
+    totalTiket.value = pemasukans.value.filter(p => p.tipe === 'tiket_masuk').reduce((sum, p) => sum + Number(p.jumlah), 0)
+  } catch (error) {
+    console.error('Gagal mengambil data pemasukan:', error)
+  } finally {
+    loading.value = false
+  }
 }
 
 const resetFilter = () => {
@@ -201,9 +185,15 @@ const resetFilter = () => {
   loadData()
 }
 
-const deleteData = (id) => {
+const deleteData = async (id) => {
   if (confirm('Yakin ingin menghapus data ini?')) {
-    pemasukans.value = pemasukans.value.filter(p => p.id !== id)
+    try {
+      await api.delete(`/admin/pemasukan/${id}`)
+      loadData()
+    } catch (error) {
+      console.error('Gagal menghapus data pemasukan:', error)
+      alert(error.response?.data?.message || 'Gagal menghapus data')
+    }
   }
 }
 

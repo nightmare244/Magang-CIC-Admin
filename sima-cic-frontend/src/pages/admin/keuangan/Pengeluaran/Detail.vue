@@ -84,12 +84,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import api from '@/services/api'
 
 const router = useRouter()
 const route = useRoute()
 
 const pengeluaran = ref({
-  id: 1,
+  id: '',
   nama_pengeluaran: '',
   kategori: '',
   nominal: 0,
@@ -100,10 +101,11 @@ const pengeluaran = ref({
 })
 
 const formatCurrency = (value) => {
-  return new Intl.NumberFormat('id-ID').format(value)
+  return new Intl.NumberFormat('id-ID').format(value || 0)
 }
 
 const formatDate = (date) => {
+  if (!date) return '-'
   return new Date(date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
@@ -129,27 +131,28 @@ const getKategoriClass = (kategori) => {
   return classes[kategori] || 'bg-gray-100 text-gray-800'
 }
 
-const deleteData = () => {
+const deleteData = async () => {
   if (confirm('Yakin ingin menghapus data ini?')) {
-    alert('Data berhasil dihapus')
-    router.push('/admin/pengeluaran')
+    try {
+      await api.delete(`/admin/pengeluaran/${route.params.id}`)
+      alert('Data berhasil dihapus')
+      router.push('/admin/pengeluaran')
+    } catch (error) {
+      console.error('Gagal menghapus data pengeluaran:', error)
+      alert(error.response?.data?.message || 'Gagal menghapus data')
+    }
   }
 }
 
-const loadData = () => {
-  // Mock load data berdasarkan ID
-  const mockData = {
-    id: route.params.id,
-    nama_pengeluaran: 'Gaji Karyawan',
-    kategori: 'gaji',
-    nominal: 50000000,
-    tanggal_pengeluaran: '2024-04-30',
-    keterangan: 'Gaji bulanan April untuk seluruh karyawan tetap',
-    created_at: '2024-04-30T10:00:00',
-    updated_at: '2024-04-30T10:00:00'
+const loadData = async () => {
+  try {
+    const res = await api.get(`/admin/pengeluaran/${route.params.id}`)
+    pengeluaran.value = res.data.data
+  } catch (error) {
+    console.error('Gagal mengambil detail pengeluaran:', error)
+    alert(error.response?.data?.message || 'Gagal mengambil detail data')
+    router.push('/admin/pengeluaran')
   }
-  
-  pengeluaran.value = { ...mockData }
 }
 
 onMounted(() => {

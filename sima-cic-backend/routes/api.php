@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 
 // Import Controllers
 use App\Http\Controllers\Api\AuthController;
-// Admin Controllers
 use App\Http\Controllers\Api\Admin\DepartemenController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\PersetujuanIzinController;
@@ -14,8 +13,9 @@ use App\Http\Controllers\Api\Admin\PersetujuanPeminjamanController;
 use App\Http\Controllers\Api\Admin\PengumumanAdminController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\AbsensiAdminController;
-use App\Http\Controllers\PemasukanController;
-use App\Http\Controllers\PengeluaranController;
+use App\Http\Controllers\Api\Admin\PemasukanController;
+use App\Http\Controllers\Api\Admin\PengeluaranController;
+use App\Http\Controllers\Api\Admin\KeuanganController;
 // Karyawan Controllers
 use App\Http\Controllers\Api\Karyawan\AbsensiController;
 use App\Http\Controllers\Api\Karyawan\PengajuanIzinController;
@@ -141,5 +141,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/pengumuman/{id}/file-stream', [PengumumanAdminController::class, 'fileStream']);
         Route::delete('/pengumuman/{id}', [PengumumanAdminController::class, 'destroy']);
         Route::apiResource('pengumuman', PengumumanAdminController::class)->except(['destroy']);
+
+        // --- KEUANGAN ---
+        Route::get('/keuangan/summary', [KeuanganController::class, 'summary']);
+        Route::apiResource('pemasukan', PemasukanController::class);
+        Route::apiResource('pengeluaran', PengeluaranController::class);
     });
 });

@@ -9,17 +9,17 @@
     <div class="stats-grid">
       <div class="stat-card income">
         <h3>Total Pemasukan</h3>
-        <h2>Rp 24.500.000</h2>
+        <h2>Rp {{ formatCurrency(totalPemasukan) }}</h2>
       </div>
 
       <div class="stat-card expense">
         <h3>Total Pengeluaran</h3>
-        <h2>Rp 12.300.000</h2>
+        <h2>Rp {{ formatCurrency(totalPengeluaran) }}</h2>
       </div>
 
       <div class="stat-card profit">
         <h3>Total Keuntungan</h3>
-        <h2>Rp 12.200.000</h2>
+        <h2>Rp {{ formatCurrency(totalKeuntungan) }}</h2>
       </div>
     </div>
 
@@ -66,6 +66,7 @@
 
 <script>
 import VueApexCharts from "vue3-apexcharts";
+import api from "@/services/api";
 
 export default {
   components: {
@@ -74,10 +75,14 @@ export default {
 
   data() {
     return {
+      totalPemasukan: 0,
+      totalPengeluaran: 0,
+      totalKeuntungan: 0,
+
       areaSeries: [
         {
           name: "Pemasukan",
-          data: [4000, 7000, 6000, 9000, 12000, 15000],
+          data: [],
         },
       ],
 
@@ -100,14 +105,7 @@ export default {
         },
 
         xaxis: {
-          categories: [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "Mei",
-            "Jun",
-          ],
+          categories: [],
         },
 
         fill: {
@@ -123,7 +121,7 @@ export default {
       barSeries: [
         {
           name: "Pengeluaran",
-          data: [3000, 5000, 4000, 7000, 6000, 8000],
+          data: [],
         },
       ],
 
@@ -148,26 +146,14 @@ export default {
         },
 
         xaxis: {
-          categories: [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "Mei",
-            "Jun",
-          ],
+          categories: [],
         },
       },
 
-      donutSeries: [44, 25, 18, 13],
+      donutSeries: [],
 
       donutOptions: {
-        labels: [
-          "Operasional",
-          "Gaji",
-          "Transport",
-          "Lainnya",
-        ],
+        labels: [],
 
         legend: {
           position: "bottom",
@@ -178,9 +164,68 @@ export default {
           "#00C896",
           "#FFB547",
           "#FF6B6B",
+          "#8A84FF",
         ],
       },
     };
+  },
+
+  methods: {
+    formatCurrency(value) {
+      return new Intl.NumberFormat('id-ID').format(value || 0);
+    },
+
+    async fetchStats() {
+      try {
+        const res = await api.get("/admin/keuangan/summary");
+        const summary = res.data.data;
+
+        this.totalPemasukan = summary.total_pemasukan;
+        this.totalPengeluaran = summary.total_pengeluaran;
+        this.totalKeuntungan = summary.total_keuntungan;
+
+        // Update Pemasukan Chart
+        this.areaSeries = [
+          {
+            name: "Pemasukan",
+            data: summary.charts.pemasukan,
+          },
+        ];
+        this.areaChartOptions = {
+          ...this.areaChartOptions,
+          xaxis: {
+            categories: summary.charts.months,
+          },
+        };
+
+        // Update Pengeluaran Chart
+        this.barSeries = [
+          {
+            name: "Pengeluaran",
+            data: summary.charts.pengeluaran,
+          },
+        ];
+        this.barChartOptions = {
+          ...this.barChartOptions,
+          xaxis: {
+            categories: summary.charts.months,
+          },
+        };
+
+        // Update Donut Chart
+        this.donutSeries = summary.charts.kategori.series;
+        this.donutOptions = {
+          ...this.donutOptions,
+          labels: summary.charts.kategori.labels,
+        };
+      } catch (error) {
+        console.error("Gagal mengambil statistik keuangan:", error);
+      }
+    },
+  },
+
+  mounted() {
+    this.fetchStats();
   },
 };
 </script>

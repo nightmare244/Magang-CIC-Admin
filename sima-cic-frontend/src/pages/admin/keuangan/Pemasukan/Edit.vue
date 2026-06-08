@@ -108,9 +108,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import api from '@/services/api'
 
 const router = useRouter()
 const route = useRoute()
+const loading = ref(false)
 
 const form = ref({
   nama_pemasukan: '',
@@ -121,25 +123,29 @@ const form = ref({
   keterangan: ''
 })
 
-const loadData = () => {
-  // Mock load data berdasarkan ID
-  const mockData = {
-    id: route.params.id,
-    nama_pemasukan: 'Tiket Masuk April',
-    tipe: 'tiket_masuk',
-    jumlah: 150,
-    nominal: 7500000,
-    tanggal_pemasukan: '2024-04-30',
-    keterangan: 'Penjualan tiket bulan April'
+const loadData = async () => {
+  try {
+    const res = await api.get(`/admin/pemasukan/${route.params.id}`)
+    form.value = res.data.data
+  } catch (error) {
+    console.error('Gagal mengambil data pemasukan:', error)
+    alert(error.response?.data?.message || 'Gagal mengambil data')
+    router.push('/admin/pemasukan')
   }
-  
-  form.value = { ...mockData }
 }
 
 const submitForm = async () => {
-  console.log('Form updated:', form.value)
-  alert('Pemasukan berhasil diupdate')
-  router.push('/admin/pemasukan')
+  loading.value = true
+  try {
+    await api.put(`/admin/pemasukan/${route.params.id}`, form.value)
+    alert('Pemasukan berhasil diupdate')
+    router.push('/admin/pemasukan')
+  } catch (error) {
+    console.error('Gagal memperbarui pemasukan:', error)
+    alert(error.response?.data?.message || 'Gagal memperbarui pemasukan')
+  } finally {
+    loading.value = false
+  }
 }
 
 onMounted(() => {

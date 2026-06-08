@@ -122,11 +122,13 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import api from '@/services/api'
 
 const pengeluarans = ref([])
 const filterBulan = ref(new Date().toISOString().slice(0, 7))
 const filterKategori = ref('')
 const totalNominal = ref(0)
+const loading = ref(false)
 
 const rataRata = computed(() => {
   return pengeluarans.value.length > 0 ? totalNominal.value / pengeluarans.value.length : 0
@@ -162,37 +164,21 @@ const getKategoriClass = (kategori) => {
   return classes[kategori] || 'bg-gray-100 text-gray-800'
 }
 
-const loadData = () => {
-  // Mock data
-  const mockData = [
-    {
-      id: 1,
-      nama_pengeluaran: 'Gaji Karyawan',
-      kategori: 'gaji',
-      nominal: 50000000,
-      tanggal_pengeluaran: '2024-04-30',
-      keterangan: 'Gaji bulanan April'
-    },
-    {
-      id: 2,
-      nama_pengeluaran: 'Listrik & Air',
-      kategori: 'utility',
-      nominal: 2500000,
-      tanggal_pengeluaran: '2024-04-25',
-      keterangan: 'Biaya listrik dan air bulan April'
-    },
-    {
-      id: 3,
-      nama_pengeluaran: 'Maintenance Server',
-      kategori: 'maintenance',
-      nominal: 5000000,
-      tanggal_pengeluaran: '2024-04-20',
-      keterangan: 'Maintenance peralatan server'
-    }
-  ]
-  
-  pengeluarans.value = mockData
-  totalNominal.value = mockData.reduce((sum, p) => sum + p.nominal, 0)
+const loadData = async () => {
+  loading.value = true
+  try {
+    const params = {}
+    if (filterBulan.value) params.bulan = filterBulan.value
+    if (filterKategori.value) params.kategori = filterKategori.value
+
+    const res = await api.get('/admin/pengeluaran', { params })
+    pengeluarans.value = res.data.data
+    totalNominal.value = pengeluarans.value.reduce((sum, p) => sum + Number(p.nominal), 0)
+  } catch (error) {
+    console.error('Gagal mengambil data pengeluaran:', error)
+  } finally {
+    loading.value = false
+  }
 }
 
 const resetFilter = () => {
@@ -201,9 +187,15 @@ const resetFilter = () => {
   loadData()
 }
 
-const deleteData = (id) => {
+const deleteData = async (id) => {
   if (confirm('Yakin ingin menghapus data ini?')) {
-    pengeluarans.value = pengeluarans.value.filter(p => p.id !== id)
+    try {
+      await api.delete(`/admin/pengeluaran/${id}`)
+      loadData()
+    } catch (error) {
+      console.error('Gagal menghapus data pengeluaran:', error)
+      alert(error.response?.data?.message || 'Gagal menghapus data')
+    }
   }
 }
 

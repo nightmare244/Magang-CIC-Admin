@@ -98,8 +98,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import api from '@/services/api'
 
 const router = useRouter()
+const loading = ref(false)
 
 const form = ref({
   nama_pengeluaran: '',
@@ -110,8 +112,16 @@ const form = ref({
 })
 
 const submitForm = async () => {
-  console.log('Form submitted:', form.value)
-  alert('Pengeluaran berhasil ditambahkan')
-  router.push('/admin/pengeluaran')
+  loading.value = true
+  try {
+    await api.post('/admin/pengeluaran', form.value)
+    alert('Pengeluaran berhasil ditambahkan')
+    router.push('/admin/pengeluaran')
+  } catch (error) {
+    console.error('Gagal menambahkan pengeluaran:', error)
+    alert(error.response?.data?.message || 'Gagal menambahkan pengeluaran')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
