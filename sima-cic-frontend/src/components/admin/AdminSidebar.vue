@@ -166,7 +166,7 @@ const navigationGroups = [
     links: [
       { name: "Dashboard Central", icon: LayoutDashboard, to: "/admin/dashboard" },
       { name: "Broadcast Info", icon: Megaphone, to: "/admin/pengumuman" },
-      { name: "Laporan keuangan", icon: CircleDollarSign, to: "/admin/laporan-keuangan" },
+      { name: "Laporan keuangan", icon: CircleDollarSign, to: "/admin/keuangan/grafik" },
     ]
   },
 
