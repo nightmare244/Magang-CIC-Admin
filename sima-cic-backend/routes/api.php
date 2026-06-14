@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\Admin\AbsensiAdminController;
 use App\Http\Controllers\Api\Admin\PemasukanController;
 use App\Http\Controllers\Api\Admin\PengeluaranController;
 use App\Http\Controllers\Api\Admin\KeuanganController;
+use App\Http\Controllers\Api\Admin\RekapBulananController;
+use App\Http\Controllers\Api\Admin\LogAktivitasController;
 // Karyawan Controllers
 use App\Http\Controllers\Api\Karyawan\AbsensiController;
 use App\Http\Controllers\Api\Karyawan\PengajuanIzinController;
@@ -146,5 +148,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/keuangan/summary', [KeuanganController::class, 'summary']);
         Route::apiResource('pemasukan', PemasukanController::class);
         Route::apiResource('pengeluaran', PengeluaranController::class);
+
+        // --- REKAP BULANAN ---
+        Route::get('/rekap-bulanan', [RekapBulananController::class, 'index']);
+
+        // --- LOG AKTIVITAS ---
+        Route::get('/log-aktivitas', [LogAktivitasController::class, 'index']);
+        Route::get('/log-aktivitas/stats', [LogAktivitasController::class, 'stats']);
     });
 });

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PeminjamanInventaris;
 use App\Models\Inventaris;
 use App\Models\User;
+use App\Services\AktivitasLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -140,6 +141,8 @@ class PersetujuanPeminjamanController extends Controller
             }
             // Catatan: Jika stok sisa > 0, status_ketersediaan tetap 'tersedia'
 
+            AktivitasLogger::approved('peminjaman', 'Menyetujui peminjaman', ($peminjaman->inventaris->nama_barang ?? 'Barang') . ' x' . $peminjaman->quantity . ' oleh ' . ($peminjaman->user->name ?? '-'), $peminjaman);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Pengajuan berhasil disetujui. Stok dikurangi.',
@@ -168,6 +171,8 @@ class PersetujuanPeminjamanController extends Controller
             'alasan_penolakan' => $request->alasan_penolakan,
             'approved_by_user_id' => $request->user()->id,
         ]);
+
+        AktivitasLogger::rejected('peminjaman', 'Menolak peminjaman', ($peminjaman->inventaris->nama_barang ?? 'Barang') . ' oleh ' . ($peminjaman->user->name ?? '-') . '. Alasan: ' . $request->alasan_penolakan, $peminjaman);
 
         return response()->json([
             'success' => true,
@@ -207,6 +212,8 @@ class PersetujuanPeminjamanController extends Controller
             if ($inventaris->quantity > 0 && $inventaris->status_ketersediaan !== 'tersedia') {
                 $inventaris->update(['status_ketersediaan' => 'tersedia']);
             }
+
+            AktivitasLogger::log('return', 'peminjaman', 'Pengembalian barang', ($peminjaman->inventaris->nama_barang ?? 'Barang') . ' x' . $peminjaman->quantity . ' dikembalikan oleh ' . ($peminjaman->user->name ?? '-'), $peminjaman);
 
             return response()->json([
                 'success' => true,

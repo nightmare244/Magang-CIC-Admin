@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use App\Services\AktivitasLogger;
 
 class AuthController extends Controller
 {
@@ -52,6 +53,9 @@ class AuthController extends Controller
         // Load relasi departemen
         $user->load('departemen');
 
+        // Log aktivitas login
+        AktivitasLogger::log('login', 'auth', 'Login ke sistem', 'Login sebagai ' . $user->role . ' (' . $user->name . ')', $user);
+
         // Return data ke frontend
         return response()->json([
             'message' => 'Login berhasil',
@@ -77,6 +81,9 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        // Log aktivitas logout sebelum token dihapus
+        AktivitasLogger::log('logout', 'auth', 'Logout dari sistem', 'Logout oleh ' . $request->user()->name);
+
         // Hapus token yang sedang digunakan
         $request->user()->currentAccessToken()->delete();
 

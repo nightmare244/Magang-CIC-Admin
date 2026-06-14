@@ -108,6 +108,23 @@ export default {
           categories: [],
         },
 
+        yaxis: {
+          labels: {
+            formatter: (val) => {
+              if (val >= 1000000000) return 'Rp ' + (val / 1000000000).toFixed(1).replace('.0', '') + ' M';
+              if (val >= 1000000) return 'Rp ' + (val / 1000000).toFixed(1).replace('.0', '') + ' Jt';
+              if (val >= 1000) return 'Rp ' + (val / 1000).toFixed(0) + ' Rb';
+              return 'Rp ' + val;
+            },
+          },
+        },
+
+        tooltip: {
+          y: {
+            formatter: (val) => 'Rp ' + new Intl.NumberFormat('id-ID').format(val),
+          },
+        },
+
         fill: {
           type: "gradient",
           gradient: {
@@ -148,6 +165,23 @@ export default {
         xaxis: {
           categories: [],
         },
+
+        yaxis: {
+          labels: {
+            formatter: (val) => {
+              if (val >= 1000000000) return 'Rp ' + (val / 1000000000).toFixed(1).replace('.0', '') + ' M';
+              if (val >= 1000000) return 'Rp ' + (val / 1000000).toFixed(1).replace('.0', '') + ' Jt';
+              if (val >= 1000) return 'Rp ' + (val / 1000).toFixed(0) + ' Rb';
+              return 'Rp ' + val;
+            },
+          },
+        },
+
+        tooltip: {
+          y: {
+            formatter: (val) => 'Rp ' + new Intl.NumberFormat('id-ID').format(val),
+          },
+        },
       },
 
       donutSeries: [],
@@ -166,6 +200,12 @@ export default {
           "#FF6B6B",
           "#8A84FF",
         ],
+
+        tooltip: {
+          y: {
+            formatter: (val) => 'Rp ' + new Intl.NumberFormat('id-ID').format(val),
+          },
+        },
       },
     };
   },

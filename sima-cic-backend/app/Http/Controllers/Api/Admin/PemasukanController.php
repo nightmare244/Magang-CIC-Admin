@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pemasukan;
+use App\Services\AktivitasLogger;
 use Illuminate\Http\Request;
 
 class PemasukanController extends Controller
@@ -54,6 +55,8 @@ class PemasukanController extends Controller
             'keterangan'        => $request->keterangan,
         ]);
 
+        AktivitasLogger::created('pemasukan', 'Menambahkan pemasukan baru', $pemasukan->nama_pemasukan . ' - Rp ' . number_format($pemasukan->nominal, 0, ',', '.'), $pemasukan);
+
         return response()->json([
             'success' => true,
             'message' => 'Pemasukan berhasil ditambahkan',
@@ -99,6 +102,8 @@ class PemasukanController extends Controller
             'keterangan'        => $request->keterangan,
         ]);
 
+        AktivitasLogger::updated('pemasukan', 'Mengubah data pemasukan', $pemasukan->nama_pemasukan . ' - Rp ' . number_format($pemasukan->nominal, 0, ',', '.'), $pemasukan);
+
         return response()->json([
             'success' => true,
             'message' => 'Pemasukan berhasil diperbarui',
@@ -112,6 +117,9 @@ class PemasukanController extends Controller
     public function destroy($id)
     {
         $pemasukan = Pemasukan::findOrFail($id);
+
+        AktivitasLogger::deleted('pemasukan', 'Menghapus data pemasukan', $pemasukan->nama_pemasukan . ' - Rp ' . number_format($pemasukan->nominal, 0, ',', '.'), $pemasukan);
+
         $pemasukan->delete();
 
         return response()->json([

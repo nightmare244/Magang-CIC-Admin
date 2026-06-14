@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pengeluaran;
+use App\Services\AktivitasLogger;
 use Illuminate\Http\Request;
 
 class PengeluaranController extends Controller
@@ -52,6 +53,8 @@ class PengeluaranController extends Controller
             'keterangan'          => $request->keterangan,
         ]);
 
+        AktivitasLogger::created('pengeluaran', 'Menambahkan pengeluaran baru', $pengeluaran->nama_pengeluaran . ' - Rp ' . number_format($pengeluaran->nominal, 0, ',', '.'), $pengeluaran);
+
         return response()->json([
             'success' => true,
             'message' => 'Pengeluaran berhasil ditambahkan',
@@ -95,6 +98,8 @@ class PengeluaranController extends Controller
             'keterangan'          => $request->keterangan,
         ]);
 
+        AktivitasLogger::updated('pengeluaran', 'Mengubah data pengeluaran', $pengeluaran->nama_pengeluaran . ' - Rp ' . number_format($pengeluaran->nominal, 0, ',', '.'), $pengeluaran);
+
         return response()->json([
             'success' => true,
             'message' => 'Pengeluaran berhasil diperbarui',
@@ -108,6 +113,9 @@ class PengeluaranController extends Controller
     public function destroy($id)
     {
         $pengeluaran = Pengeluaran::findOrFail($id);
+
+        AktivitasLogger::deleted('pengeluaran', 'Menghapus data pengeluaran', $pengeluaran->nama_pengeluaran . ' - Rp ' . number_format($pengeluaran->nominal, 0, ',', '.'), $pengeluaran);
+
         $pengeluaran->delete();
 
         return response()->json([

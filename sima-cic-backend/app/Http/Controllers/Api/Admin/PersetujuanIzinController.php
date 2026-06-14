@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Izin;
 use App\Models\Absensi;
+use App\Services\AktivitasLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -87,6 +88,11 @@ public function show($id)
             }
 
             DB::commit();
+
+            $aksi = $izin->status === 'disetujui' ? 'approve' : 'reject';
+            $label = $izin->status === 'disetujui' ? 'Menyetujui' : 'Menolak';
+            AktivitasLogger::log($aksi, 'izin', $label . ' pengajuan izin', 'Izin ' . ($izin->tipe_izin ?? '-') . ' oleh ' . ($izin->user->name ?? 'User #' . $izin->user_id), $izin);
+
             return response()->json(['success' => true, 'data' => $izin]);
         } catch (\Exception $e) {
             DB::rollBack();

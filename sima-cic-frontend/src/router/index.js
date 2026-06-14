@@ -53,6 +53,8 @@ import PengeluaranCreate from "@/pages/admin/keuangan/Pengeluaran/Create.vue";
 import PengeluaranEdit from "@/pages/admin/keuangan/Pengeluaran/Edit.vue";
 import PengeluaranDetail from "@/pages/admin/keuangan/Pengeluaran/Detail.vue";
 import GrafikKeuangan from "@/pages/admin/keuangan/grafik/index.vue";
+import RekapBulanan from "@/pages/admin/rekap-bulanan/index.vue";
+import LogAktivitas from "@/pages/admin/log-aktivitas/index.vue";
 
 // ================= KARYAWAN PAGES =================
 import KaryawanDashboard from "@/pages/karyawan/dashboard/Dashboard.vue";
@@ -149,6 +151,12 @@ const routes = [
             
             // Keuangan - Grafik
             { path: "keuangan/grafik", name: "admin.keuangan.grafik", component: GrafikKeuangan, meta: { title: "Dashboard Grafik Keuangan" } },
+            
+            // Rekap Bulanan
+            { path: "rekap-bulanan", name: "admin.rekap.bulanan", component: RekapBulanan, meta: { title: "Rekapitulasi Bulanan" } },
+            
+            // Log Aktivitas
+            { path: "log-aktivitas", name: "admin.log.aktivitas", component: LogAktivitas, meta: { title: "Log Aktivitas Sistem" } },
             
             // Absensi (Admin)
             { path: "absensi/settings", name: "admin.absensi.settings", component: AbsensiSettings, meta: { title: "Pengaturan Absensi" } },
