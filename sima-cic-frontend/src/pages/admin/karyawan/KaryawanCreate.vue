@@ -73,10 +73,9 @@
           <div class="space-y-2">
             <label class="kpi-label !text-slate-500">Departemen <span class="text-rose-500">*</span></label>
             <select v-model="form.departemen_id" class="input-field-eco" required>
-              <option value="">-- Pilih Unit --</option>
-              <option v-for="d in departemens" :key="d.id" :value="d.id">
-                {{ d.nama_departemen || d.nama }}
-              </option>
+              <option value="">-- Pilih Kategori --</option>
+              <option value="6">Karyawan</option>
+              <option value="7">THL (Tenaga Harian Lepas)</option>
             </select>
           </div>
 
@@ -180,7 +179,7 @@ const form = ref({
   tempat_lahir: "",
   tanggal_lahir: "",
   role: "karyawan",
-  status_kerja: "Aktif", // Properti baru
+  status_kerja: "Aktif",
   password: null,
 });
 

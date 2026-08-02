@@ -29,8 +29,10 @@ class User extends Authenticatable
         'alamat', 
         'foto_profil', 
         'departemen_id',
-        'role', 
-        'status_kerja', // REVISI: Menggantikan is_active
+        'role',
+        'status_kerja',
+        'kategori',      // 'karyawan' atau 'thl'
+        'can_absen_thl', // boolean: izin input absensi THL
     ];
 
     /**

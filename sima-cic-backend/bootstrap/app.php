@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\IsAdmin;
+use App\Http\Middleware\CekAbsenDiri;
+use App\Http\Middleware\CekAbsenkanThl;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,7 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // karena hal tersebut sering memicu error "Multiple CORS header".
 
         $middleware->alias([
-            'is.admin' => IsAdmin::class,
+            'is.admin'           => IsAdmin::class,
+            'cek.absen.diri'     => CekAbsenDiri::class,
+            'cek.absenkan.thl'   => CekAbsenkanThl::class,
         ]);
 
         // Memastikan request dari SPA (Vue/React) diperlakukan sebagai stateful
