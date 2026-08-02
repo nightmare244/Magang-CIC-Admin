@@ -21,15 +21,6 @@ class AbsensiController extends Controller
         DB::beginTransaction();
 
         try {
-            // Guard: THL tidak boleh self-absen
-            $authUser = $request->user();
-            if ($authUser && $authUser->kategori === 'thl') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Akun THL tidak dapat melakukan absensi mandiri. Hubungi mandor atau pengawas Anda.',
-                ], 403);
-            }
-
             $validated = $request->validate([
                 'qr_code'   => 'required|string',
                 'latitude'  => 'required|numeric',

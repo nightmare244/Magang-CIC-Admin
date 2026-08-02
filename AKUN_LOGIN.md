@@ -27,7 +27,7 @@
 
 ---
 
-## 👷 THL - TENAGA HARIAN LEPAS (Self-Absen Diblokir ❌ / Diinput Mandor)
+## 👷 THL - TENAGA HARIAN LEPAS (Absensi Mandiri ✅)
 
 | No | Nama | NIP | Password | Email | Kategori |
 |----|------|-----|----------|-------|----------|
