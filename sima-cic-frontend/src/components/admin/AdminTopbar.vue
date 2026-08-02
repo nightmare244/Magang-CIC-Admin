@@ -49,7 +49,7 @@
               :src="avatarUrl"
               alt="Admin Profile"
               class="w-10 h-10 rounded-xl object-cover bg-slate-200 border-2 border-white dark:border-[#1a1d19] shadow-md transition-all duration-300 group-hover:scale-105"
-              @error="(e) => e.target.src = defaultAvatar" 
+              @error="handleAvatarError"
             />
             <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-[#0a0c0a] rounded-full shadow-sm animate-pulse"></div>
           </div>
@@ -145,6 +145,15 @@ function toggleDarkMode() {
 
 function toggleDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value;
+}
+
+function handleAvatarError(event) {
+  const target = event.target;
+
+  if (target.dataset.avatarFallback === "true") return;
+
+  target.src = defaultAvatar;
+  target.dataset.avatarFallback = "true";
 }
 
 // Menutup dropdown jika klik di luar elemen
