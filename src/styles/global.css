@@ -1,0 +1,144 @@
+/* -------------------------------------------------------------------------
+   GLOBAL FONT IMPORT
+   ------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+/* --- Tailwind Directives --- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------------------------------------------------------------------------
+   1. ROOT RESET & BASE STYLES
+   ------------------------------------------------------------------------- */
+:root {
+    --army-primary: #5E815F;
+    --army-dark: #4a664b;
+    --army-light: #8ba88c;
+    --bg-dark-main: #0f1410;
+    --bg-dark-card: #1a1d19;
+}
+
+html, body, #app {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+body {
+    @apply font-poppins text-gray-800 transition-colors duration-300;
+    font-family: 'Poppins', sans-serif !important;
+    background-color: #f8f9fa; /* Light Mode Background */
+}
+
+/* Dark Mode Consistency */
+.dark body {
+    background-color: var(--bg-dark-main);
+    color: #e5e7eb;
+}
+
+/* -------------------------------------------------------------------------
+   2. REUSABLE COMPONENTS (Custom Army Classes)
+   ------------------------------------------------------------------------- */
+
+@layer components {
+    /* AUTH & GENERAL CARDS */
+    .auth-card {
+        @apply bg-white dark:bg-[#1a1d19] p-8 rounded-3xl shadow-2xl border border-gray-100 dark:border-white/5;
+    }
+
+    /* INPUT FIELDS ARMED STYLE */
+    .army-input {
+        @apply w-full px-5 py-3 rounded-2xl bg-gray-100 dark:bg-white/5 
+               border-2 border-transparent text-gray-800 dark:text-gray-200 
+               transition-all duration-300 outline-none
+               focus:border-[#5E815F] focus:bg-white dark:focus:bg-transparent;
+    }
+
+    /* BUTTON PREMIUM ARMY */
+    .btn-army {
+        @apply px-6 py-3 bg-[#5E815F] text-white font-bold rounded-2xl 
+               hover:bg-[#4a664b] active:scale-[0.97] transition-all 
+               shadow-lg shadow-[#5E815F]/20 flex items-center justify-center;
+    }
+
+    .btn-army-outline {
+        @apply px-6 py-3 bg-transparent border-2 border-[#5E815F] text-[#5E815F] 
+               font-bold rounded-2xl hover:bg-[#5E815F] hover:text-white transition-all;
+    }
+
+    /* TABLE BASE STYLE */
+    .army-table-container {
+        @apply overflow-hidden rounded-3xl border border-gray-100 dark:border-gray-800 
+               bg-white dark:bg-[#1a1d19] shadow-sm;
+    }
+
+    /* BADGE STATUS */
+    .badge-status {
+        @apply px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider;
+    }
+}
+
+/* -------------------------------------------------------------------------
+   3. ANIMATIONS
+   ------------------------------------------------------------------------- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+}
+
+/* -------------------------------------------------------------------------
+   4. SCROLLBAR CUSTOMIZATION
+   ------------------------------------------------------------------------- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-gray-700 rounded-full hover:bg-[#5E815F];
+}
+
+/* -------------------------------------------------------------------------
+   5. THIRD PARTY OVERRIDES (Toastify, Leaflet, etc.)
+   ------------------------------------------------------------------------- */
+.Toastify__toast {
+    @apply font-poppins rounded-2xl !important;
+}
+
+.leaflet-container {
+    @apply font-poppins !important;
+}
+
+/* Fix for Leaflet Map Grayscale effect in settings */
+.map-army-style {
+    filter: grayscale(100%) invert(100%) contrast(90%);
+}
+
+/* -------------------------------------------------------------------------
+   6. RESPONSIVE UTILITIES
+   ------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .p-6 { padding: 1rem; }
+    .text-3xl { font-size: 1.5rem; }
+}
