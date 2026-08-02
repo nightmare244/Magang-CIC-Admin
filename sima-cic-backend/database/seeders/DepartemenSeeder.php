@@ -9,25 +9,32 @@ use Carbon\Carbon;
 class DepartemenSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Run the database seeds idempotently.
      */
     public function run(): void
     {
-        // Pastikan tabel departemens sudah ada
-        DB::table('departemens')->insert([
-            
-        [
-           'nama_departemen' => 'Tenaga Harian Lepas',
-           'deskripsi' => 'Karyawan dengan status tenaga harian lepas.',
-           'created_at' => Carbon::now(),
-           'updated_at' => Carbon::now(),
-        ],
-        [
-           'nama_departemen' => 'Karyawan',
-           'deskripsi' => 'Karyawan tetap maupun kontrak perusahaan.',
-           'created_at' => Carbon::now(),
-           'updated_at' => Carbon::now(),
-        ],
-        ]);
+        $now = Carbon::now();
+
+        $departemens = [
+            [
+               'nama_departemen' => 'Tenaga Harian Lepas',
+               'deskripsi'       => 'Karyawan dengan status tenaga harian lepas.',
+            ],
+            [
+               'nama_departemen' => 'Karyawan',
+               'deskripsi'       => 'Karyawan tetap maupun kontrak perusahaan.',
+            ],
+        ];
+
+        foreach ($departemens as $d) {
+            DB::table('departemens')->updateOrInsert(
+                ['nama_departemen' => $d['nama_departemen']],
+                [
+                    'deskripsi'  => $d['deskripsi'],
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ]
+            );
+        }
     }
 }
