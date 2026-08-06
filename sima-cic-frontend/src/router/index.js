@@ -221,7 +221,7 @@ const routes = [
 ];
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHistory(import.meta.env.BASE_URL), // Sinkron dengan base di vite.config.js
     routes,
     scrollBehavior(to, from, savedPosition) {
         if (savedPosition) return savedPosition;
