@@ -346,8 +346,6 @@ const submitForm = async () => {
     errorMessage.value = null;
 
     try {
-      const backendBase = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
-      await axios.get(`${backendBase}/sanctum/csrf-cookie`, { withCredentials: true });
       const payload = { ...form.value };
       const res = await api.put('/admin/absensi/settings', payload);
       

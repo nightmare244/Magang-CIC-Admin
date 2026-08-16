@@ -248,35 +248,45 @@ class AbsensiAdminController extends Controller
 
     public function updateSettings(Request $request)
     {
-        foreach ($request->all() as $key => $value) {
-            Setting::updateOrCreate(['key' => $key], ['value' => $value]);
-        }
-
-        $jamMasukBaru = Carbon::parse($request->jam_masuk_kantor);
-        $toleransi = (int) $request->toleransi_keterlambatan;
-        $batasAlpaBaru = $jamMasukBaru->copy()->addMinutes($toleransi);
-
-        $absensiHariIni = Absensi::whereDate('tanggal', Carbon::today())->get();
-
-        foreach ($absensiHariIni as $absen) {
-            if ($absen->jam_masuk) {
-                $jmKaryawan = Carbon::parse($absen->jam_masuk);
-                
-                if ($jmKaryawan->greaterThan($batasAlpaBaru)) {
-                    $absen->status_hari = 'ALPA';
-                    $absen->status_masuk = 'terlambat_alpa';
-                } else {
-                    $absen->status_hari = 'HADIR';
-                    $absen->status_masuk = $jmKaryawan->greaterThan($jamMasukBaru) ? 'terlambat' : 'tepat_waktu';
-                }
-                $absen->save(); 
+        try {
+            foreach ($request->all() as $key => $value) {
+                Setting::updateOrCreate(['key' => $key], ['value' => $value]);
             }
-        }
 
-        return response()->json([
-            'success' => true, 
-            'message' => 'Konfigurasi disimpan & Status absensi hari ini telah disinkronkan!'
-        ]);
+            if ($request->filled('jam_masuk_kantor')) {
+                $jamMasukBaru = Carbon::parse($request->jam_masuk_kantor);
+                $toleransi = (int) ($request->toleransi_keterlambatan ?? 0);
+                $batasAlpaBaru = $jamMasukBaru->copy()->addMinutes($toleransi);
+
+                $absensiHariIni = Absensi::whereDate('tanggal', Carbon::today())->get();
+
+                foreach ($absensiHariIni as $absen) {
+                    if ($absen->jam_masuk) {
+                        $jmKaryawan = Carbon::parse($absen->jam_masuk);
+                        
+                        if ($jmKaryawan->greaterThan($batasAlpaBaru)) {
+                            $absen->status_hari = 'ALPA';
+                            $absen->status_masuk = 'terlambat_alpa';
+                        } else {
+                            $absen->status_hari = 'HADIR';
+                            $absen->status_masuk = $jmKaryawan->greaterThan($jamMasukBaru) ? 'terlambat' : 'tepat_waktu';
+                        }
+                        $absen->save(); 
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Konfigurasi disimpan & Status absensi hari ini telah disinkronkan!'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Update settings error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getSettings()
