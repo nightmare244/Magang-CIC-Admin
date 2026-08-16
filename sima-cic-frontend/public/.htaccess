@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /sima/sima-cic-frontend/
+    RewriteBase /
 
     # Jangan redirect jika file/folder benar-benar ada
     RewriteCond %{REQUEST_FILENAME} !-f
