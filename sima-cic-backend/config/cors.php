@@ -23,6 +23,9 @@ return [
         'http://localhost:5174',
         'http://127.0.0.1:5174',
         'http://localhost:3000',
+        // Production
+        'https://sima.ciwangunparkland.id',
+        'http://sima.ciwangunparkland.id',
     ],
 
     'allowed_origins_patterns' => [],

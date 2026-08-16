@@ -3,7 +3,7 @@ import vue from "@vitejs/plugin-vue";
 import path from "path";  // Pastikan path diimpor
 
 export default defineConfig({
-  base: "/sima/sima-cic-frontend/", // Base URL sesuai path deployment di Hostinger
+  base: "/", // Base URL untuk root subdomain sima.ciwangunparkland.id
   plugins: [vue()],
   resolve: {
     alias: {
