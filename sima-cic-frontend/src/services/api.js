@@ -3,7 +3,8 @@
 import axios from "axios";
 
 // Gunakan VITE_API_URL jika tersedia, fallback ke localhost
-const BACKEND_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const rawUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const BACKEND_BASE = rawUrl.replace(/\/api\/?$/, "").replace(/\/+$/, "");
 
 // Membuat instance Axios dengan base URL (akan mengarah ke /api)
 const api = axios.create({

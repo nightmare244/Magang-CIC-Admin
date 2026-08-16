@@ -19,7 +19,9 @@ const app = createApp(App);
 app.use(createPinia()); 
 
 // 3. Konfigurasi Global Axios
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const rawApiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const backendBaseUrl = rawApiUrl.replace(/\/api\/?$/, "").replace(/\/+$/, "");
+axios.defaults.baseURL = `${backendBaseUrl}/api`;
 
 // 4. Load Token dari LocalStorage dan Set Header
 const token = localStorage.getItem("token");
