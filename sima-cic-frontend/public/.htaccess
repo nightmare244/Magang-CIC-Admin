@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /sima/sima-cic-frontend/
+
+    # Jangan redirect jika file/folder benar-benar ada
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Redirect semua request ke index.html (SPA fallback)
+    RewriteRule ^ index.html [L]
+</IfModule>
