@@ -2,10 +2,17 @@
 
 import axios from "axios";
 
-// Membuat instance Axios dengan base URL
+// Gunakan VITE_API_URL jika tersedia, fallback ke localhost
+const BACKEND_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
+// Membuat instance Axios dengan base URL (akan mengarah ke /api)
 const api = axios.create({
-    baseURL: "http://127.0.0.1:8000/api", // Ganti dengan URL API Anda
+    baseURL: `${BACKEND_BASE}/api`,
+    withCredentials: true,
 });
+
+// Pastikan default axios juga bisa menggunakan withCredentials jika diperlukan
+axios.defaults.withCredentials = true;
 
 // Interceptor untuk menambahkan token pada header Authorization
 api.interceptors.request.use((config) => {

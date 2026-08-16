@@ -17,12 +17,20 @@
         </div>
       </div>
 
-      <Transition name="slide-fade">
-        <div v-if="successMessage" class="flex items-center gap-3 px-6 py-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl shadow-sm">
-          <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-          <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{{ successMessage }}</span>
-        </div>
-      </Transition>
+      <div class="flex flex-col sm:flex-row gap-2 items-end">
+        <Transition name="slide-fade">
+          <div v-if="errorMessage" class="flex items-center gap-3 px-6 py-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 rounded-xl shadow-sm">
+            <div class="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></div>
+            <span class="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest">{{ errorMessage }}</span>
+          </div>
+        </Transition>
+        <Transition name="slide-fade">
+          <div v-if="successMessage" class="flex items-center gap-3 px-6 py-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl shadow-sm">
+            <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{{ successMessage }}</span>
+          </div>
+        </Transition>
+      </div>
     </header>
 
     <div v-if="isLoading" class="flex flex-col items-center justify-center py-40">
@@ -170,6 +178,8 @@ import QrcodeVue from 'qrcode.vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import api from '@/services/api';
+import axios from 'axios';
+import Swal from 'sweetalert2';
 import { 
   Settings, Clock, QrCode, Download, MapPin, 
   Navigation, Save, RefreshCw, Loader2, Keyboard, AlertCircle 
@@ -179,6 +189,7 @@ let map, marker, circle;
 const isLoading = ref(true);
 const isSubmitting = ref(false);
 const successMessage = ref(null);
+const errorMessage = ref(null);
 const qrContainer = ref(null);
 
 const form = ref({
@@ -208,7 +219,7 @@ const initMap = async () => {
     const lat = parseFloat(form.value.company_latitude) || -6.680611;
     const lng = parseFloat(form.value.company_longitude) || 107.517056;
 
-    map = L.map('map', { zoomControl: false, attributionControl: false }).setView([lat, lng], 17);
+    map = L.map('map', { zoomControl: true, attributionControl: false }).setView([lat, lng], 17);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
 
     marker = L.marker([lat, lng], { draggable: true, icon: createCustomMarker() }).addTo(map);
@@ -221,6 +232,12 @@ const initMap = async () => {
         const { lat, lng } = e.target.getLatLng();
         form.value.company_latitude = lat.toFixed(8);
         form.value.company_longitude = lng.toFixed(8);
+        syncMapGraphic();
+    });
+
+    map.on('click', (e) => {
+        form.value.company_latitude = e.latlng.lat.toFixed(8);
+        form.value.company_longitude = e.latlng.lng.toFixed(8);
         syncMapGraphic();
     });
 };
@@ -239,13 +256,54 @@ const syncMapGraphic = () => {
 };
 
 const getCurrentLocation = () => {
-    if (!navigator.geolocation) return alert("GPS tidak didukung.");
-    navigator.geolocation.getCurrentPosition((pos) => {
+    if (!navigator.geolocation) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'GPS Tidak Didukung',
+        text: 'Peramban atau perangkat Anda tidak mendukung fitur Geolocation.',
+        confirmButtonColor: '#2d4a3e',
+        customClass: {
+          popup: 'rounded-[2rem] font-poppins',
+          confirmButton: 'rounded-xl font-bold text-[10px] uppercase tracking-widest px-6 py-3'
+        }
+      });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
         form.value.company_latitude = pos.coords.latitude.toFixed(8);
         form.value.company_longitude = pos.coords.longitude.toFixed(8);
         syncMapGraphic();
         if(map) map.setView([pos.coords.latitude, pos.coords.longitude], 18);
-    }, null, { enableHighAccuracy: false, timeout: 10000 });
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Lokasi Terdeteksi',
+          text: 'Titik koordinat berhasil diperbarui sesuai lokasi GPS Anda.',
+          timer: 1800,
+          showConfirmButton: false,
+          customClass: {
+            popup: 'rounded-[2rem] font-poppins',
+            title: 'text-[16px] font-bold',
+            htmlContainer: 'text-[12px]'
+          }
+        });
+      }, 
+      (err) => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Deteksi Lokasi Gagal',
+          text: err.message || 'Tidak dapat mengambil koordinat GPS saat ini. Pastikan izin lokasi aktif di browser Anda.',
+          confirmButtonColor: '#2d4a3e',
+          customClass: {
+            popup: 'rounded-[2rem] font-poppins',
+            confirmButton: 'rounded-xl font-bold text-[10px] uppercase tracking-widest px-6 py-3'
+          }
+        });
+      }, 
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
 };
 
 const fetchSettings = async () => {
@@ -264,6 +322,16 @@ const fetchSettings = async () => {
         };
     } catch (e) {
         console.error(e);
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Memuat Konfigurasi',
+          text: 'Tidak dapat mengambil konfigurasi pengaturan dari server.',
+          confirmButtonColor: '#2d4a3e',
+          customClass: {
+            popup: 'rounded-[2rem] font-poppins',
+            confirmButton: 'rounded-xl font-bold text-[10px] uppercase tracking-widest px-6 py-3'
+          }
+        });
     } finally {
         setTimeout(() => { 
             isLoading.value = false;
@@ -274,46 +342,120 @@ const fetchSettings = async () => {
 
 const submitForm = async () => {
     isSubmitting.value = true;
+    successMessage.value = null;
+    errorMessage.value = null;
+
     try {
-        await api.get('http://127.0.0.1:8000/sanctum/csrf-cookie');
-        const payload = { ...form.value };
-        await api.put('/admin/absensi/settings', payload);
-        successMessage.value = "KONFIGURASI BERHASIL DISIMPAN";
-        setTimeout(() => successMessage.value = null, 3000);
+      const backendBase = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+      await axios.get(`${backendBase}/sanctum/csrf-cookie`, { withCredentials: true });
+      const payload = { ...form.value };
+      const res = await api.put('/admin/absensi/settings', payload);
+      
+      const msg = res.data?.message || 'Konfigurasi sistem berhasil disimpan & disinkronkan.';
+      successMessage.value = 'KONFIGURASI BERHASIL DISIMPAN';
+      setTimeout(() => (successMessage.value = null), 4000);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil Disimpan',
+        text: msg,
+        timer: 2000,
+        showConfirmButton: false,
+        customClass: {
+          popup: 'rounded-[2rem] font-poppins',
+          title: 'text-[16px] font-bold',
+          htmlContainer: 'text-[12px]'
+        }
+      });
     } catch (e) {
-        alert("Gagal menyimpan perubahan.");
+      console.error("Save settings error:", e);
+      const errMsg = e.response?.data?.message || 'Gagal menyimpan perubahan konfigurasi sistem.';
+      errorMessage.value = 'GAGAL MENYIMPAN PERUBAHAN';
+      setTimeout(() => (errorMessage.value = null), 4000);
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal Menyimpan',
+        text: errMsg,
+        confirmButtonColor: '#2d4a3e',
+        customClass: {
+          popup: 'rounded-[2rem] font-poppins',
+          title: 'text-[16px] font-bold',
+          htmlContainer: 'text-[12px]',
+          confirmButton: 'rounded-xl font-bold text-[10px] uppercase tracking-widest px-6 py-3'
+        }
+      });
     } finally {
-        isSubmitting.value = false;
+      isSubmitting.value = false;
     }
 };
 
 const downloadQRHighRes = () => {
-    const originalCanvas = qrContainer.value.querySelector('canvas');
-    if (!originalCanvas) return;
+    const originalCanvas = qrContainer.value?.querySelector('canvas');
+    if (!originalCanvas) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal Mengunduh',
+        text: 'QR Code belum siap untuk diunduh.',
+        confirmButtonColor: '#2d4a3e',
+        customClass: {
+          popup: 'rounded-[2rem] font-poppins',
+          confirmButton: 'rounded-xl font-bold text-[10px] uppercase tracking-widest px-6 py-3'
+        }
+      });
+      return;
+    }
 
-    const totalSize = 1080; 
-    const padding = 120; 
-    const qrSize = totalSize - (padding * 2); 
+    try {
+      const totalSize = 1080; 
+      const padding = 120; 
+      const qrSize = totalSize - (padding * 2); 
 
-    const highResCanvas = document.createElement('canvas');
-    highResCanvas.width = totalSize;
-    highResCanvas.height = totalSize;
-    const ctx = highResCanvas.getContext('2d');
+      const highResCanvas = document.createElement('canvas');
+      highResCanvas.width = totalSize;
+      highResCanvas.height = totalSize;
+      const ctx = highResCanvas.getContext('2d');
 
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, totalSize, totalSize);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, totalSize, totalSize);
 
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(
-        originalCanvas, 
-        padding, padding, 
-        qrSize, qrSize   
-    );
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(
+          originalCanvas, 
+          padding, padding, 
+          qrSize, qrSize   
+      );
 
-    const link = document.createElement('a');
-    link.download = `QR-PERMANEN-CIC-HD-WHITE-SPACE.png`;
-    link.href = highResCanvas.toDataURL("image/png", 1.0);
-    link.click();
+      const link = document.createElement('a');
+      link.download = `QR-PERMANEN-CIC-HD-WHITE-SPACE.png`;
+      link.href = highResCanvas.toDataURL("image/png", 1.0);
+      link.click();
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil Diunduh',
+        text: 'File QR Code resolusi tinggi (1080px) telah diunduh.',
+        timer: 1800,
+        showConfirmButton: false,
+        customClass: {
+          popup: 'rounded-[2rem] font-poppins',
+          title: 'text-[16px] font-bold',
+          htmlContainer: 'text-[12px]'
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal Mengunduh',
+        text: 'Terjadi kesalahan saat memproses gambar QR.',
+        confirmButtonColor: '#2d4a3e',
+        customClass: {
+          popup: 'rounded-[2rem] font-poppins',
+          confirmButton: 'rounded-xl font-bold text-[10px] uppercase tracking-widest px-6 py-3'
+        }
+      });
+    }
 };
 
 onMounted(fetchSettings);
