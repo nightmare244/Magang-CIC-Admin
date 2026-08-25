@@ -145,7 +145,7 @@ import {
   X, LayoutDashboard, Megaphone, Users2, Layers, Clock4, 
   ChevronDown, CalendarCheck2, PackageSearch, Handshake, Sun, Moon, LogOut,
   ChevronLeft, ChevronRight, CircleDollarSign, BanknoteArrowUp, BanknoteArrowDown,
-  ClipboardList, ScrollText
+  ClipboardList, ScrollText, TrendingUp, Scale
 } from "lucide-vue-next";
 
 const props = defineProps({ modelValue: Boolean });
@@ -176,6 +176,8 @@ const navigationGroups = [
     links: [
       { name: "Pemasukan", icon: BanknoteArrowUp, to: "/admin/pemasukan" },
       { name: "Pengeluaran", icon: BanknoteArrowDown, to: "/admin/pengeluaran" },
+      { name: "Laba Rugi", icon: TrendingUp, to: "/admin/keuangan/laba-rugi" },
+      { name: "Neraca", icon: Scale, to: "/admin/keuangan/neraca" },
       { name: "Grafik Keuangan", icon: CircleDollarSign, to: "/admin/keuangan/grafik" },
       { name: "Rekap Bulanan", icon: ClipboardList, to: "/admin/rekap-bulanan" },
     ]

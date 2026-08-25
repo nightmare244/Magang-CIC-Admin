@@ -53,6 +53,8 @@ import PengeluaranCreate from "@/pages/admin/keuangan/Pengeluaran/Create.vue";
 import PengeluaranEdit from "@/pages/admin/keuangan/Pengeluaran/Edit.vue";
 import PengeluaranDetail from "@/pages/admin/keuangan/Pengeluaran/Detail.vue";
 import GrafikKeuangan from "@/pages/admin/keuangan/grafik/index.vue";
+import LabaRugi from "@/pages/admin/keuangan/LabaRugi.vue";
+import Neraca from "@/pages/admin/keuangan/Neraca.vue";
 import RekapBulanan from "@/pages/admin/rekap-bulanan/index.vue";
 import LogAktivitas from "@/pages/admin/log-aktivitas/index.vue";
 
@@ -149,8 +151,10 @@ const routes = [
             { path: "pengeluaran/:id", name: "admin.pengeluaran.detail", component: PengeluaranDetail, meta: { title: "Detail Pengeluaran" } },
             { path: "pengeluaran/:id/edit", name: "admin.pengeluaran.edit", component: PengeluaranEdit, meta: { title: "Edit Pengeluaran" } },
             
-            // Keuangan - Grafik
+            // Keuangan - Grafik & Laporan
             { path: "keuangan/grafik", name: "admin.keuangan.grafik", component: GrafikKeuangan, meta: { title: "Dashboard Grafik Keuangan" } },
+            { path: "keuangan/laba-rugi", name: "admin.keuangan.labarugi", component: LabaRugi, meta: { title: "Laporan Laba Rugi" } },
+            { path: "keuangan/neraca", name: "admin.keuangan.neraca", component: Neraca, meta: { title: "Neraca Keuangan" } },
             
             // Rekap Bulanan
             { path: "rekap-bulanan", name: "admin.rekap.bulanan", component: RekapBulanan, meta: { title: "Rekapitulasi Bulanan" } },

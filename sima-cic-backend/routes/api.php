@@ -146,8 +146,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // --- KEUANGAN ---
         Route::get('/keuangan/summary', [KeuanganController::class, 'summary']);
+        Route::get('/keuangan/laba-rugi', [KeuanganController::class, 'labaRugi']);
+        Route::get('/keuangan/neraca', [KeuanganController::class, 'neraca']);
         Route::apiResource('pemasukan', PemasukanController::class);
         Route::apiResource('pengeluaran', PengeluaranController::class);
+
 
         // --- REKAP BULANAN ---
         Route::get('/rekap-bulanan', [RekapBulananController::class, 'index']);
