@@ -144,7 +144,8 @@ import logoImg from "../../assets/logo/logo.png";
 import { 
   X, LayoutDashboard, Megaphone, Users2, Layers, Clock4, 
   ChevronDown, CalendarCheck2, PackageSearch, Handshake, Sun, Moon, LogOut,
-  ChevronLeft, ChevronRight 
+  ChevronLeft, ChevronRight, CircleDollarSign, ArrowLeftRight, FolderTree, BookMarked, FileSpreadsheet,
+  ClipboardList, ScrollText
 } from "lucide-vue-next";
 
 const props = defineProps({ modelValue: Boolean });
@@ -166,6 +167,18 @@ const navigationGroups = [
     links: [
       { name: "Dashboard Central", icon: LayoutDashboard, to: "/admin/dashboard" },
       { name: "Broadcast Info", icon: Megaphone, to: "/admin/pengumuman" },
+      { name: "Log Aktivitas", icon: ScrollText, to: "/admin/log-aktivitas" },
+    ]
+  },
+  {
+    title: 'Keuangan & Akuntansi',
+    links: [
+      { name: "Pemasukan & Pengeluaran", icon: ArrowLeftRight, to: "/admin/keuangan/transaksi" },
+      { name: "Daftar Akun (CoA)", icon: FolderTree, to: "/admin/keuangan/akun" },
+      { name: "Jurnal Kas", icon: BookMarked, to: "/admin/keuangan/jurnal-kas" },
+      { name: "Laporan Keuangan", icon: FileSpreadsheet, to: "/admin/keuangan/laporan" },
+      { name: "Grafik Keuangan", icon: CircleDollarSign, to: "/admin/keuangan/grafik" },
+      { name: "Rekap Bulanan", icon: ClipboardList, to: "/admin/rekap-bulanan" },
     ]
   },
   {
@@ -199,7 +212,11 @@ const checkScreenWidth = () => {
   if (isMobile.value) isCollapsed.value = false;
 };
 
-const isActive = (path) => route.path === path ? 'active-link-eco' : 'inactive-link-eco';
+const isActive = (path) => {
+  if (route.path === path) return 'active-link-eco';
+  if (path !== '/admin/dashboard' && route.path.startsWith(path)) return 'active-link-eco';
+  return 'inactive-link-eco';
+};
 const isActiveAbsensi = () => route.path.startsWith('/admin/absensi/') ? 'active-link-eco' : 'inactive-link-eco';
 
 const toggleAbsensi = () => { isAbsensiOpen.value = !isAbsensiOpen.value; };

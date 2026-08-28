@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             DepartemenSeeder::class,
             MasterDataSeeder::class,
             InventarisSeeder::class,
+            AkunSeeder::class,
         ]);
     }
 }

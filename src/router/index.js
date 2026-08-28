@@ -43,6 +43,27 @@ import AbsensiSettings from "@/pages/admin/absensi/Settings.vue";
 import AbsensiReport from "@/pages/admin/absensi/Report.vue"; 
 import AbsensiDetailAdmin from "@/pages/admin/absensi/Detail.vue";
 
+import TransaksiIndex from "@/pages/admin/keuangan/Transaksi/index.vue";
+import TransaksiCreate from "@/pages/admin/keuangan/Transaksi/Create.vue";
+import TransaksiEdit from "@/pages/admin/keuangan/Transaksi/Edit.vue";
+import TransaksiDetail from "@/pages/admin/keuangan/Transaksi/Detail.vue";
+import AkunIndex from "@/pages/admin/keuangan/Akun/index.vue";
+import JurnalKasIndex from "@/pages/admin/keuangan/Jurnal/index.vue";
+import LaporanKeuanganIndex from "@/pages/admin/keuangan/Laporan/index.vue";
+
+import PemasukanIndex from "@/pages/admin/keuangan/Pemasukan/index.vue";
+import PemasukanCreate from "@/pages/admin/keuangan/Pemasukan/Create.vue";
+import PemasukanEdit from "@/pages/admin/keuangan/Pemasukan/Edit.vue";
+import PemasukanDetail from "@/pages/admin/keuangan/Pemasukan/Detail.vue";
+
+import PengeluaranIndex from "@/pages/admin/keuangan/Pengeluaran/index.vue";
+import PengeluaranCreate from "@/pages/admin/keuangan/Pengeluaran/Create.vue";
+import PengeluaranEdit from "@/pages/admin/keuangan/Pengeluaran/Edit.vue";
+import PengeluaranDetail from "@/pages/admin/keuangan/Pengeluaran/Detail.vue";
+import GrafikKeuangan from "@/pages/admin/keuangan/grafik/index.vue";
+import RekapBulanan from "@/pages/admin/rekap-bulanan/index.vue";
+import LogAktivitas from "@/pages/admin/log-aktivitas/index.vue";
+
 // ================= KARYAWAN PAGES =================
 import KaryawanDashboard from "@/pages/karyawan/dashboard/Dashboard.vue";
 import AbsensiIndex from "@/pages/karyawan/absensi/index.vue";
@@ -70,7 +91,7 @@ import KaryawanProfilChangePassword from "@/pages/karyawan/profil/ChangePassword
 import KaryawanProfilUploadPhoto from "@/pages/karyawan/profil/UploadPhoto.vue";
 
 const routes = [
-    { path: "/", redirect: "/landing" },
+    { path: "/", redirect: "/admin/dashboard" },
     {
         path: "/login",
         component: AuthLayout,
@@ -124,6 +145,45 @@ const routes = [
             { path: "pengumuman/:id", name: "admin.pengumuman.detail", component: PengumumanDetail, meta: { title: "Detail Pengumuman" } },
             { path: "pengumuman/:id/edit", name: "admin.pengumuman.edit", component: PengumumanEdit, meta: { title: "Edit Pengumuman" } },
             
+            // Keuangan & Akuntansi (Terpadu)
+            { path: "keuangan/transaksi", name: "admin.keuangan.transaksi.index", component: TransaksiIndex, meta: { title: "Pemasukan & Pengeluaran" } },
+            { path: "keuangan/transaksi/create", name: "admin.keuangan.transaksi.create", component: TransaksiCreate, meta: { title: "Tambah Transaksi Keuangan" } },
+            { path: "keuangan/transaksi/:id", name: "admin.keuangan.transaksi.detail", component: TransaksiDetail, meta: { title: "Detail Transaksi Keuangan" } },
+            { path: "keuangan/transaksi/:id/edit", name: "admin.keuangan.transaksi.edit", component: TransaksiEdit, meta: { title: "Edit Transaksi Keuangan" } },
+            
+            // Master Daftar Akun (CoA)
+            { path: "keuangan/akun", name: "admin.keuangan.akun.index", component: AkunIndex, meta: { title: "Daftar Akun (CoA)" } },
+            
+            // Jurnal Kas
+            { path: "keuangan/jurnal-kas", name: "admin.keuangan.jurnal.index", component: JurnalKasIndex, meta: { title: "Jurnal Kas" } },
+            
+            // Laporan Keuangan
+            { path: "keuangan/laporan", name: "admin.keuangan.laporan.index", component: LaporanKeuanganIndex, meta: { title: "Laporan Keuangan" } },
+            { path: "keuangan/laporan/arus-kas", name: "admin.keuangan.laporan.arus_kas", component: LaporanKeuanganIndex, meta: { title: "Laporan Arus Kas" } },
+            { path: "keuangan/laporan/laba-rugi", name: "admin.keuangan.laporan.laba_rugi", component: LaporanKeuanganIndex, meta: { title: "Laporan Laba Rugi" } },
+            { path: "keuangan/laporan/neraca", name: "admin.keuangan.laporan.neraca", component: LaporanKeuanganIndex, meta: { title: "Laporan Neraca" } },
+
+            // Keuangan - Pemasukan (Legacy Routes - redirect / fallback)
+            { path: "pemasukan", name: "admin.pemasukan.index", redirect: "/admin/keuangan/transaksi" },
+            { path: "pemasukan/create", name: "admin.pemasukan.create", redirect: "/admin/keuangan/transaksi/create" },
+            { path: "pemasukan/:id", name: "admin.pemasukan.detail", component: PemasukanDetail, meta: { title: "Detail Pemasukan" } },
+            { path: "pemasukan/:id/edit", name: "admin.pemasukan.edit", component: PemasukanEdit, meta: { title: "Edit Pemasukan" } },
+            
+            // Keuangan - Pengeluaran (Legacy Routes - redirect / fallback)
+            { path: "pengeluaran", name: "admin.pengeluaran.index", redirect: "/admin/keuangan/transaksi" },
+            { path: "pengeluaran/create", name: "admin.pengeluaran.create", redirect: "/admin/keuangan/transaksi/create" },
+            { path: "pengeluaran/:id", name: "admin.pengeluaran.detail", component: PengeluaranDetail, meta: { title: "Detail Pengeluaran" } },
+            { path: "pengeluaran/:id/edit", name: "admin.pengeluaran.edit", component: PengeluaranEdit, meta: { title: "Edit Pengeluaran" } },
+            
+            // Keuangan - Grafik
+            { path: "keuangan/grafik", name: "admin.keuangan.grafik", component: GrafikKeuangan, meta: { title: "Dashboard Grafik Keuangan" } },
+            
+            // Rekap Bulanan
+            { path: "rekap-bulanan", name: "admin.rekap.bulanan", component: RekapBulanan, meta: { title: "Rekapitulasi Bulanan" } },
+            
+            // Log Aktivitas
+            { path: "log-aktivitas", name: "admin.log.aktivitas", component: LogAktivitas, meta: { title: "Log Aktivitas Sistem" } },
+            
             // Absensi (Admin)
             { path: "absensi/settings", name: "admin.absensi.settings", component: AbsensiSettings, meta: { title: "Pengaturan Absensi" } },
             { path: "absensi/laporan", name: "admin.absensi.laporan", component: AbsensiReport, meta: { title: "Laporan Kehadiran" } },
@@ -168,7 +228,7 @@ const routes = [
     path: "peminjaman/:id", 
     name: "karyawan.peminjaman.detail", 
     // TAMBAHKAN /views/ DI PATH NYA
-    component: () => import('@/pages/karyawan/peminjaman/views/PeminjamanDetail.vue'), 
+    component: () => import('@/pages/karyawan/Peminjaman/views/PeminjamanDetail.vue'), 
     meta: { title: "Detail Peminjaman" } 
 },
 
@@ -187,7 +247,7 @@ const routes = [
 ];
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHistory(import.meta.env.BASE_URL), // Sinkron dengan base di vite.config.js
     routes,
     scrollBehavior(to, from, savedPosition) {
         if (savedPosition) return savedPosition;

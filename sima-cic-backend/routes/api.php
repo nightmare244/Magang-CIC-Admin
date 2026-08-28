@@ -18,6 +18,9 @@ use App\Http\Controllers\Api\Admin\PengeluaranController;
 use App\Http\Controllers\Api\Admin\KeuanganController;
 use App\Http\Controllers\Api\Admin\RekapBulananController;
 use App\Http\Controllers\Api\Admin\LogAktivitasController;
+use App\Http\Controllers\Api\Admin\AkunController;
+use App\Http\Controllers\Api\Admin\TransaksiKeuanganController;
+use App\Http\Controllers\Api\Admin\LaporanKeuanganController;
 // Karyawan Controllers
 use App\Http\Controllers\Api\Karyawan\AbsensiController;
 use App\Http\Controllers\Api\Karyawan\PengajuanIzinController;
@@ -146,6 +149,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // --- KEUANGAN ---
         Route::get('/keuangan/summary', [KeuanganController::class, 'summary']);
+        Route::apiResource('akuns', AkunController::class);
+        Route::apiResource('keuangan/transaksi', TransaksiKeuanganController::class);
+        Route::get('/keuangan/jurnal-kas', [LaporanKeuanganController::class, 'jurnalKas']);
+        Route::get('/keuangan/laporan/arus-kas', [LaporanKeuanganController::class, 'arusKas']);
+        Route::get('/keuangan/laporan/laba-rugi', [LaporanKeuanganController::class, 'labaRugi']);
+        Route::get('/keuangan/laporan/neraca', [LaporanKeuanganController::class, 'neraca']);
         Route::apiResource('pemasukan', PemasukanController::class);
         Route::apiResource('pengeluaran', PengeluaranController::class);
 

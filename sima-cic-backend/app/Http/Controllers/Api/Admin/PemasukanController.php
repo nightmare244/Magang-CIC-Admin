@@ -14,7 +14,7 @@ class PemasukanController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Pemasukan::query();
+        $query = Pemasukan::with('akun');
 
         if ($request->filled('bulan')) {
             $query->whereRaw("DATE_FORMAT(tanggal_pemasukan, '%Y-%m') = ?", [$request->bulan]);
@@ -22,6 +22,10 @@ class PemasukanController extends Controller
 
         if ($request->filled('tipe')) {
             $query->where('tipe', $request->tipe);
+        }
+
+        if ($request->filled('akun_id')) {
+            $query->where('akun_id', $request->akun_id);
         }
 
         $pemasukans = $query->orderBy('tanggal_pemasukan', 'desc')->get();
@@ -38,6 +42,7 @@ class PemasukanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'akun_id'           => 'nullable|exists:akuns,id',
             'nama_pemasukan'    => 'required|string|max:255',
             'tipe'              => 'required|string|in:tiket_masuk,donasi,sponsor,lainnya',
             'jumlah'            => 'required|integer|min:1',
@@ -47,6 +52,7 @@ class PemasukanController extends Controller
         ]);
 
         $pemasukan = Pemasukan::create([
+            'akun_id'           => $request->akun_id,
             'nama_pemasukan'    => $request->nama_pemasukan,
             'tipe'              => $request->tipe,
             'jumlah'            => $request->jumlah,
@@ -60,7 +66,7 @@ class PemasukanController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pemasukan berhasil ditambahkan',
-            'data'    => $pemasukan
+            'data'    => $pemasukan->load('akun')
         ], 201);
     }
 
@@ -69,7 +75,7 @@ class PemasukanController extends Controller
      */
     public function show($id)
     {
-        $pemasukan = Pemasukan::findOrFail($id);
+        $pemasukan = Pemasukan::with('akun')->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -85,6 +91,7 @@ class PemasukanController extends Controller
         $pemasukan = Pemasukan::findOrFail($id);
 
         $request->validate([
+            'akun_id'           => 'nullable|exists:akuns,id',
             'nama_pemasukan'    => 'required|string|max:255',
             'tipe'              => 'required|string|in:tiket_masuk,donasi,sponsor,lainnya',
             'jumlah'            => 'required|integer|min:1',
@@ -94,6 +101,7 @@ class PemasukanController extends Controller
         ]);
 
         $pemasukan->update([
+            'akun_id'           => $request->input('akun_id', $pemasukan->akun_id),
             'nama_pemasukan'    => $request->nama_pemasukan,
             'tipe'              => $request->tipe,
             'jumlah'            => $request->jumlah,
@@ -107,7 +115,7 @@ class PemasukanController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pemasukan berhasil diperbarui',
-            'data'    => $pemasukan
+            'data'    => $pemasukan->load('akun')
         ]);
     }
 

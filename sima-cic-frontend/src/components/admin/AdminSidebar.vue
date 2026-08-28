@@ -144,7 +144,7 @@ import logoImg from "../../assets/logo/logo.png";
 import { 
   X, LayoutDashboard, Megaphone, Users2, Layers, Clock4, 
   ChevronDown, CalendarCheck2, PackageSearch, Handshake, Sun, Moon, LogOut,
-  ChevronLeft, ChevronRight, CircleDollarSign, BanknoteArrowUp, BanknoteArrowDown,
+  ChevronLeft, ChevronRight, CircleDollarSign, ArrowLeftRight, FolderTree, BookMarked, FileSpreadsheet,
   ClipboardList, ScrollText
 } from "lucide-vue-next";
 
@@ -171,11 +171,13 @@ const navigationGroups = [
     ]
   },
 
-    {
-    title: 'Keuangan & Operasional',
+  {
+    title: 'Keuangan & Akuntansi',
     links: [
-      { name: "Pemasukan", icon: BanknoteArrowUp, to: "/admin/pemasukan" },
-      { name: "Pengeluaran", icon: BanknoteArrowDown, to: "/admin/pengeluaran" },
+      { name: "Pemasukan & Pengeluaran", icon: ArrowLeftRight, to: "/admin/keuangan/transaksi" },
+      { name: "Daftar Akun (CoA)", icon: FolderTree, to: "/admin/keuangan/akun" },
+      { name: "Jurnal Kas", icon: BookMarked, to: "/admin/keuangan/jurnal-kas" },
+      { name: "Laporan Keuangan", icon: FileSpreadsheet, to: "/admin/keuangan/laporan" },
       { name: "Grafik Keuangan", icon: CircleDollarSign, to: "/admin/keuangan/grafik" },
       { name: "Rekap Bulanan", icon: ClipboardList, to: "/admin/rekap-bulanan" },
     ]
@@ -211,7 +213,11 @@ const checkScreenWidth = () => {
   if (isMobile.value) isCollapsed.value = false;
 };
 
-const isActive = (path) => route.path === path ? 'active-link-eco' : 'inactive-link-eco';
+const isActive = (path) => {
+  if (route.path === path) return 'active-link-eco';
+  if (path !== '/admin/dashboard' && route.path.startsWith(path)) return 'active-link-eco';
+  return 'inactive-link-eco';
+};
 const isActiveAbsensi = () => route.path.startsWith('/admin/absensi/') ? 'active-link-eco' : 'inactive-link-eco';
 
 const toggleAbsensi = () => { isAbsensiOpen.value = !isAbsensiOpen.value; };

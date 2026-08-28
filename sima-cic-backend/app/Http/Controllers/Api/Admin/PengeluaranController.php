@@ -14,7 +14,7 @@ class PengeluaranController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Pengeluaran::query();
+        $query = Pengeluaran::with('akun');
 
         if ($request->filled('bulan')) {
             $query->whereRaw("DATE_FORMAT(tanggal_pengeluaran, '%Y-%m') = ?", [$request->bulan]);
@@ -22,6 +22,10 @@ class PengeluaranController extends Controller
 
         if ($request->filled('kategori')) {
             $query->where('kategori', $request->kategori);
+        }
+
+        if ($request->filled('akun_id')) {
+            $query->where('akun_id', $request->akun_id);
         }
 
         $pengeluarans = $query->orderBy('tanggal_pengeluaran', 'desc')->get();
@@ -38,6 +42,7 @@ class PengeluaranController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'akun_id'             => 'nullable|exists:akuns,id',
             'nama_pengeluaran'    => 'required|string|max:255',
             'kategori'            => 'required|string|in:gaji,operasional,maintenance,utility,lainnya',
             'nominal'             => 'required|numeric|min:0',
@@ -46,6 +51,7 @@ class PengeluaranController extends Controller
         ]);
 
         $pengeluaran = Pengeluaran::create([
+            'akun_id'             => $request->akun_id,
             'nama_pengeluaran'    => $request->nama_pengeluaran,
             'kategori'            => $request->kategori,
             'nominal'             => $request->nominal,
@@ -58,7 +64,7 @@ class PengeluaranController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pengeluaran berhasil ditambahkan',
-            'data'    => $pengeluaran
+            'data'    => $pengeluaran->load('akun')
         ], 201);
     }
 
@@ -67,7 +73,7 @@ class PengeluaranController extends Controller
      */
     public function show($id)
     {
-        $pengeluaran = Pengeluaran::findOrFail($id);
+        $pengeluaran = Pengeluaran::with('akun')->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -83,6 +89,7 @@ class PengeluaranController extends Controller
         $pengeluaran = Pengeluaran::findOrFail($id);
 
         $request->validate([
+            'akun_id'             => 'nullable|exists:akuns,id',
             'nama_pengeluaran'    => 'required|string|max:255',
             'kategori'            => 'required|string|in:gaji,operasional,maintenance,utility,lainnya',
             'nominal'             => 'required|numeric|min:0',
@@ -91,6 +98,7 @@ class PengeluaranController extends Controller
         ]);
 
         $pengeluaran->update([
+            'akun_id'             => $request->input('akun_id', $pengeluaran->akun_id),
             'nama_pengeluaran'    => $request->nama_pengeluaran,
             'kategori'            => $request->kategori,
             'nominal'             => $request->nominal,
@@ -103,7 +111,7 @@ class PengeluaranController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pengeluaran berhasil diperbarui',
-            'data'    => $pengeluaran
+            'data'    => $pengeluaran->load('akun')
         ]);
     }
 

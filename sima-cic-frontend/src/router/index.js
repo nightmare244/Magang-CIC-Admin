@@ -43,6 +43,14 @@ import AbsensiSettings from "@/pages/admin/absensi/Settings.vue";
 import AbsensiReport from "@/pages/admin/absensi/Report.vue"; 
 import AbsensiDetailAdmin from "@/pages/admin/absensi/Detail.vue";
 
+import TransaksiIndex from "@/pages/admin/keuangan/Transaksi/index.vue";
+import TransaksiCreate from "@/pages/admin/keuangan/Transaksi/Create.vue";
+import TransaksiEdit from "@/pages/admin/keuangan/Transaksi/Edit.vue";
+import TransaksiDetail from "@/pages/admin/keuangan/Transaksi/Detail.vue";
+import AkunIndex from "@/pages/admin/keuangan/Akun/index.vue";
+import JurnalKasIndex from "@/pages/admin/keuangan/Jurnal/index.vue";
+import LaporanKeuanganIndex from "@/pages/admin/keuangan/Laporan/index.vue";
+
 import PemasukanIndex from "@/pages/admin/keuangan/Pemasukan/index.vue";
 import PemasukanCreate from "@/pages/admin/keuangan/Pemasukan/Create.vue";
 import PemasukanEdit from "@/pages/admin/keuangan/Pemasukan/Edit.vue";
@@ -137,15 +145,33 @@ const routes = [
             { path: "pengumuman/:id", name: "admin.pengumuman.detail", component: PengumumanDetail, meta: { title: "Detail Pengumuman" } },
             { path: "pengumuman/:id/edit", name: "admin.pengumuman.edit", component: PengumumanEdit, meta: { title: "Edit Pengumuman" } },
             
-            // Keuangan - Pemasukan
-            { path: "pemasukan", name: "admin.pemasukan.index", component: PemasukanIndex, meta: { title: "Daftar Pemasukan" } },
-            { path: "pemasukan/create", name: "admin.pemasukan.create", component: PemasukanCreate, meta: { title: "Tambah Pemasukan" } },
+            // Keuangan & Akuntansi (Terpadu)
+            { path: "keuangan/transaksi", name: "admin.keuangan.transaksi.index", component: TransaksiIndex, meta: { title: "Pemasukan & Pengeluaran" } },
+            { path: "keuangan/transaksi/create", name: "admin.keuangan.transaksi.create", component: TransaksiCreate, meta: { title: "Tambah Transaksi Keuangan" } },
+            { path: "keuangan/transaksi/:id", name: "admin.keuangan.transaksi.detail", component: TransaksiDetail, meta: { title: "Detail Transaksi Keuangan" } },
+            { path: "keuangan/transaksi/:id/edit", name: "admin.keuangan.transaksi.edit", component: TransaksiEdit, meta: { title: "Edit Transaksi Keuangan" } },
+            
+            // Master Daftar Akun (CoA)
+            { path: "keuangan/akun", name: "admin.keuangan.akun.index", component: AkunIndex, meta: { title: "Daftar Akun (CoA)" } },
+            
+            // Jurnal Kas
+            { path: "keuangan/jurnal-kas", name: "admin.keuangan.jurnal.index", component: JurnalKasIndex, meta: { title: "Jurnal Kas" } },
+            
+            // Laporan Keuangan
+            { path: "keuangan/laporan", name: "admin.keuangan.laporan.index", component: LaporanKeuanganIndex, meta: { title: "Laporan Keuangan" } },
+            { path: "keuangan/laporan/arus-kas", name: "admin.keuangan.laporan.arus_kas", component: LaporanKeuanganIndex, meta: { title: "Laporan Arus Kas" } },
+            { path: "keuangan/laporan/laba-rugi", name: "admin.keuangan.laporan.laba_rugi", component: LaporanKeuanganIndex, meta: { title: "Laporan Laba Rugi" } },
+            { path: "keuangan/laporan/neraca", name: "admin.keuangan.laporan.neraca", component: LaporanKeuanganIndex, meta: { title: "Laporan Neraca" } },
+
+            // Keuangan - Pemasukan (Legacy Routes - redirect / fallback)
+            { path: "pemasukan", name: "admin.pemasukan.index", redirect: "/admin/keuangan/transaksi" },
+            { path: "pemasukan/create", name: "admin.pemasukan.create", redirect: "/admin/keuangan/transaksi/create" },
             { path: "pemasukan/:id", name: "admin.pemasukan.detail", component: PemasukanDetail, meta: { title: "Detail Pemasukan" } },
             { path: "pemasukan/:id/edit", name: "admin.pemasukan.edit", component: PemasukanEdit, meta: { title: "Edit Pemasukan" } },
             
-            // Keuangan - Pengeluaran
-            { path: "pengeluaran", name: "admin.pengeluaran.index", component: PengeluaranIndex, meta: { title: "Daftar Pengeluaran" } },
-            { path: "pengeluaran/create", name: "admin.pengeluaran.create", component: PengeluaranCreate, meta: { title: "Tambah Pengeluaran" } },
+            // Keuangan - Pengeluaran (Legacy Routes - redirect / fallback)
+            { path: "pengeluaran", name: "admin.pengeluaran.index", redirect: "/admin/keuangan/transaksi" },
+            { path: "pengeluaran/create", name: "admin.pengeluaran.create", redirect: "/admin/keuangan/transaksi/create" },
             { path: "pengeluaran/:id", name: "admin.pengeluaran.detail", component: PengeluaranDetail, meta: { title: "Detail Pengeluaran" } },
             { path: "pengeluaran/:id/edit", name: "admin.pengeluaran.edit", component: PengeluaranEdit, meta: { title: "Edit Pengeluaran" } },
             
