@@ -47,8 +47,12 @@
             required
           >
             <option value="tiket_masuk">Tiket Masuk</option>
+            <option value="tiket_event">Tiket Event</option>
+            <option value="pendapatan_jasa">Pendapatan Jasa</option>
+            <option value="penjualan_produk">Penjualan Produk</option>
             <option value="donasi">Donasi</option>
             <option value="sponsor">Sponsor</option>
+            <option value="grant">Hibah / Grant</option>
             <option value="lainnya">Lainnya</option>
           </select>
         </div>

@@ -175,8 +175,10 @@ const routes = [
             { path: "pengeluaran/:id", name: "admin.pengeluaran.detail", component: PengeluaranDetail, meta: { title: "Detail Pengeluaran" } },
             { path: "pengeluaran/:id/edit", name: "admin.pengeluaran.edit", component: PengeluaranEdit, meta: { title: "Edit Pengeluaran" } },
             
-            // Keuangan - Grafik
+            // Keuangan - Grafik & Laporan
             { path: "keuangan/grafik", name: "admin.keuangan.grafik", component: GrafikKeuangan, meta: { title: "Dashboard Grafik Keuangan" } },
+            { path: "keuangan/laba-rugi", name: "admin.keuangan.labarugi", redirect: "/admin/keuangan/laporan/laba-rugi" },
+            { path: "keuangan/neraca", name: "admin.keuangan.neraca", redirect: "/admin/keuangan/laporan/neraca" },
             
             // Rekap Bulanan
             { path: "rekap-bulanan", name: "admin.rekap.bulanan", component: RekapBulanan, meta: { title: "Rekapitulasi Bulanan" } },

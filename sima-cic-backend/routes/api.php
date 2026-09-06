@@ -158,6 +158,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('pemasukan', PemasukanController::class);
         Route::apiResource('pengeluaran', PengeluaranController::class);
 
+
         // --- REKAP BULANAN ---
         Route::get('/rekap-bulanan', [RekapBulananController::class, 'index']);
 

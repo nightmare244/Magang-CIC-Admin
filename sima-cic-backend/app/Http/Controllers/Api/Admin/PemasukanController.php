@@ -44,7 +44,7 @@ class PemasukanController extends Controller
         $request->validate([
             'akun_id'           => 'nullable|exists:akuns,id',
             'nama_pemasukan'    => 'required|string|max:255',
-            'tipe'              => 'required|string|in:tiket_masuk,donasi,sponsor,lainnya',
+            'tipe'              => 'required|string|in:tiket_masuk,tiket_event,pendapatan_jasa,penjualan_produk,donasi,sponsor,grant,lainnya',
             'jumlah'            => 'required|integer|min:1',
             'nominal'           => 'required|numeric|min:0',
             'tanggal_pemasukan' => 'required|date',
@@ -93,7 +93,7 @@ class PemasukanController extends Controller
         $request->validate([
             'akun_id'           => 'nullable|exists:akuns,id',
             'nama_pemasukan'    => 'required|string|max:255',
-            'tipe'              => 'required|string|in:tiket_masuk,donasi,sponsor,lainnya',
+            'tipe'              => 'required|string|in:tiket_masuk,tiket_event,pendapatan_jasa,penjualan_produk,donasi,sponsor,grant,lainnya',
             'jumlah'            => 'required|integer|min:1',
             'nominal'           => 'required|numeric|min:0',
             'tanggal_pemasukan' => 'required|date',

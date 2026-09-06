@@ -118,20 +118,28 @@ const formatDate = (date) => {
 
 const formatTipe = (tipe) => {
   const types = {
-    'tiket_masuk': 'Tiket Masuk',
-    'donasi': 'Donasi',
-    'sponsor': 'Sponsor',
-    'lainnya': 'Lainnya'
+    'tiket_masuk':      'Tiket Masuk',
+    'tiket_event':      'Tiket Event',
+    'pendapatan_jasa':  'Pendapatan Jasa',
+    'penjualan_produk': 'Penjualan Produk',
+    'donasi':           'Donasi',
+    'sponsor':          'Sponsor',
+    'grant':            'Hibah / Grant',
+    'lainnya':          'Lainnya'
   }
   return types[tipe] || tipe
 }
 
 const getTipeClass = (tipe) => {
   const classes = {
-    'tiket_masuk': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
-    'donasi': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-    'sponsor': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-    'lainnya': 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
+    'tiket_masuk':      'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+    'tiket_event':      'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+    'pendapatan_jasa':  'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
+    'penjualan_produk': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+    'donasi':           'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+    'sponsor':          'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+    'grant':            'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+    'lainnya':          'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
   }
   return classes[tipe] || 'bg-gray-100 text-gray-800'
 }
