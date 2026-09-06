@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6 p-6 font-poppins">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <!-- Header (Disembunyikan saat dicetak) -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print">
       <div class="flex items-center gap-3">
         <div class="p-2.5 rounded-xl bg-[#2d4a3e]/10 dark:bg-emerald-500/10 text-[#2d4a3e] dark:text-emerald-400">
           <FileSpreadsheet class="w-6 h-6" />
@@ -23,7 +23,7 @@
 
         <button 
           @click="printReport" 
-          class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 transition font-medium text-xs shadow-sm"
+          class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#2d4a3e] text-white rounded-xl hover:bg-[#233a30] transition font-medium text-xs shadow-sm"
         >
           <Printer class="w-4 h-4" />
           <span>Cetak Laporan</span>
@@ -31,8 +31,8 @@
       </div>
     </div>
 
-    <!-- Navigation Tabs: Arus Kas / Laba Rugi / Neraca -->
-    <div class="flex items-center gap-2 p-1.5 bg-gray-100 dark:bg-gray-800/80 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
+    <!-- Navigation Tabs: Arus Kas / Laba Rugi / Neraca (Disembunyikan saat dicetak) -->
+    <div class="flex items-center gap-2 p-1.5 bg-gray-100 dark:bg-gray-800/80 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-x-auto no-print">
       <button 
         @click="activeTab = 'arus_kas'; loadReport()"
         class="flex-1 min-w-[140px] py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2"
@@ -67,8 +67,15 @@
       </button>
     </div>
 
+    <!-- Official Kop Surat / Header Cetak Formal (Hanya muncul saat print) -->
+    <div class="hidden print:block text-center border-b-2 border-gray-800 pb-3 mb-6">
+      <h1 class="text-xl font-black uppercase tracking-wider text-gray-900">WISATA CIWANGUN PARKLAND</h1>
+      <p class="text-xs font-semibold text-gray-700">SISTEM INFORMASI MANAJEMEN & AKUNTANSI (SIMA CIC)</p>
+      <p class="text-[11px] text-gray-500 mt-0.5">Jl. Kolonel Masturi, Cihanjuang Rahayu, Kec. Parongpong, Kab. Bandung Barat, Jawa Barat</p>
+    </div>
+
     <!-- Loading State -->
-    <div v-if="loading" class="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+    <div v-if="loading" class="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 no-print">
       <div class="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
       <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Menghasilkan laporan keuangan realtime...</p>
     </div>
@@ -78,6 +85,22 @@
       <ArusKas v-if="activeTab === 'arus_kas'" :report="reportData" />
       <LabaRugi v-else-if="activeTab === 'laba_rugi'" :report="reportData" />
       <Neraca v-else-if="activeTab === 'neraca'" :report="reportData" />
+    </div>
+
+    <!-- Formal Signature Section (Hanya muncul saat print) -->
+    <div class="hidden print:grid grid-cols-2 gap-12 pt-10 text-center text-xs text-gray-900 font-medium">
+      <div>
+        <p>Dibuat Oleh,</p>
+        <div class="h-20"></div>
+        <p class="font-bold underline uppercase">Staff Keuangan / Akuntan</p>
+        <p class="text-[10px] text-gray-500">SIMA Ciwangun Parkland</p>
+      </div>
+      <div>
+        <p>Mengetahui & Menyetujui,</p>
+        <div class="h-20"></div>
+        <p class="font-bold underline uppercase">Pimpinan / Manajemen</p>
+        <p class="text-[10px] text-gray-500">Wisata Ciwangun Parkland</p>
+      </div>
     </div>
   </div>
 </template>
@@ -132,20 +155,3 @@ onMounted(() => {
   loadReport()
 })
 </script>
-
-<style scoped>
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  .printable-area, .printable-area * {
-    visibility: visible;
-  }
-  .printable-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
-}
-</style>

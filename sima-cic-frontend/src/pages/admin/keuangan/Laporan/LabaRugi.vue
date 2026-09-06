@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
-    <!-- Header & Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <!-- Header & Summary Cards (Disembunyikan saat dicetak) -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 no-print">
       <div class="bg-blue-50/70 dark:bg-blue-950/20 p-5 rounded-2xl border border-blue-200 dark:border-blue-800">
         <p class="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider">Total Pendapatan</p>
         <p class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">

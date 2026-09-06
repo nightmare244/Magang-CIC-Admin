@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-6">
-    <!-- Balance Indicator Banner -->
+    <!-- Balance Indicator Banner (Disembunyikan saat dicetak) -->
     <div 
-      class="p-4 rounded-2xl border flex items-center justify-between"
+      class="p-4 rounded-2xl border flex items-center justify-between no-print"
       :class="report.is_balanced 
         ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200' 
         : 'bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200'"

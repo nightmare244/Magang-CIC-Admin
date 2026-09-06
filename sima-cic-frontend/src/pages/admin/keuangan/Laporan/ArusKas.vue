@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
-    <!-- Header & Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <!-- Header & Summary Cards (Disembunyikan saat dicetak) -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 no-print">
       <div class="bg-emerald-50/70 dark:bg-emerald-950/20 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800">
         <p class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">Total Kas Masuk</p>
         <p class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
