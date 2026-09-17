@@ -151,7 +151,10 @@ const initMap = () => {
       const coords = data.value.lokasi_masuk.split(',').map(c => parseFloat(c.trim()));
       if (map) map.remove();
       map = L.map('map-karyawan', { zoomControl: false, attributionControl: false }).setView(coords, 16);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(map);
       L.circleMarker(coords, { radius: 8, color: '#fff', weight: 3, fillColor: '#10b981', fillOpacity: 1 }).addTo(map);
     }, 400);
   });

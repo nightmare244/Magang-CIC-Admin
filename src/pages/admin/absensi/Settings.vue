@@ -209,7 +209,10 @@ const initMap = async () => {
     const lng = parseFloat(form.value.company_longitude) || 107.517056;
 
     map = L.map('map', { zoomControl: false, attributionControl: false }).setView([lat, lng], 17);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
 
     marker = L.marker([lat, lng], { draggable: true, icon: createCustomMarker() }).addTo(map);
     circle = L.circle([lat, lng], {
