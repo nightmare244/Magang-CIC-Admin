@@ -144,7 +144,7 @@ import logoImg from "../../assets/logo/logo.png";
 import { 
   X, LayoutDashboard, Megaphone, Users2, Layers, Clock4, 
   ChevronDown, CalendarCheck2, PackageSearch, Handshake, Sun, Moon, LogOut,
-  ChevronLeft, ChevronRight, CircleDollarSign, ArrowLeftRight, FolderTree, BookMarked, FileSpreadsheet,
+  ChevronLeft, ChevronRight, CircleDollarSign, FolderTree, BookMarked, FileSpreadsheet,
   ClipboardList, ScrollText
 } from "lucide-vue-next";
 
@@ -174,7 +174,6 @@ const navigationGroups = [
   {
     title: 'Keuangan & Akuntansi',
     links: [
-      { name: "Pemasukan & Pengeluaran", icon: ArrowLeftRight, to: "/admin/keuangan/transaksi" },
       { name: "Daftar Akun (CoA)", icon: FolderTree, to: "/admin/keuangan/akun" },
       { name: "Jurnal Kas", icon: BookMarked, to: "/admin/keuangan/jurnal-kas" },
       { name: "Laporan Keuangan", icon: FileSpreadsheet, to: "/admin/keuangan/laporan" },

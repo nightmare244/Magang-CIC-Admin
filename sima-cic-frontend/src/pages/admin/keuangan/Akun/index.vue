@@ -21,26 +21,6 @@
       </button>
     </div>
 
-    <!-- Summary KPI Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700/80 shadow-sm">
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Akun</p>
-        <p class="text-2xl font-black text-gray-800 dark:text-white mt-1">{{ summary.total }} Akun</p>
-      </div>
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700/80 shadow-sm">
-        <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Akun Aset / Kas</p>
-        <p class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{{ summary.aset }} Akun</p>
-      </div>
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700/80 shadow-sm">
-        <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Akun Pendapatan</p>
-        <p class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">{{ summary.pendapatan }} Akun</p>
-      </div>
-      <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700/80 shadow-sm">
-        <p class="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Akun Beban / Biaya</p>
-        <p class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">{{ summary.beban }} Akun</p>
-      </div>
-    </div>
-
     <!-- Filter Tab & Search -->
     <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
       <div class="flex flex-wrap items-center gap-1.5 p-1 bg-gray-100 dark:bg-gray-700/60 rounded-xl overflow-x-auto">
@@ -62,7 +42,7 @@
           type="text" 
           placeholder="Cari kode / nama akun..."
           class="w-full pl-9 pr-3.5 py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none"
-          @input="loadData"
+          @input="onSearchInput"
         />
       </div>
     </div>
@@ -75,15 +55,11 @@
             <tr>
               <th class="px-5 py-3.5">Kode Akun</th>
               <th class="px-5 py-3.5">Nama Akun</th>
-              <th class="px-5 py-3.5">Kategori</th>
-              <th class="px-5 py-3.5">Saldo Normal</th>
-              <th class="px-5 py-3.5 text-right">Saldo Awal (Rp)</th>
-              <th class="px-5 py-3.5 text-center">Status</th>
-              <th class="px-5 py-3.5 text-center">Aksi</th>
+              <th class="px-5 py-3.5 text-right">Saldo</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-700/60 text-sm">
-            <tr v-for="a in akuns" :key="a.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
+            <tr v-for="a in paginatedAkuns" :key="a.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
               <!-- Kode Akun -->
               <td class="px-5 py-3.5 whitespace-nowrap font-mono font-bold text-gray-900 dark:text-white">
                 <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-700">
@@ -97,55 +73,9 @@
                 <p v-if="a.keterangan" class="text-xs text-gray-400 mt-0.5 line-clamp-1">{{ a.keterangan }}</p>
               </td>
 
-              <!-- Kategori -->
-              <td class="px-5 py-3.5 whitespace-nowrap">
-                <span 
-                  class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider"
-                  :class="getCategoryBadgeClass(a.kategori)"
-                >
-                  {{ a.kategori }}
-                </span>
-              </td>
-
-              <!-- Saldo Normal -->
-              <td class="px-5 py-3.5 whitespace-nowrap capitalize text-xs font-semibold text-gray-600 dark:text-gray-300">
-                {{ a.saldo_normal }}
-              </td>
-
-              <!-- Saldo Awal -->
+              <!-- Saldo -->
               <td class="px-5 py-3.5 whitespace-nowrap text-right font-mono font-bold text-gray-800 dark:text-gray-200">
                 Rp {{ formatCurrency(a.saldo_awal) }}
-              </td>
-
-              <!-- Status -->
-              <td class="px-5 py-3.5 whitespace-nowrap text-center">
-                <span 
-                  class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold"
-                  :class="a.is_active ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-gray-100 text-gray-600'"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full" :class="a.is_active ? 'bg-emerald-500' : 'bg-gray-400'"></span>
-                  {{ a.is_active ? 'Aktif' : 'Nonaktif' }}
-                </span>
-              </td>
-
-              <!-- Aksi -->
-              <td class="px-5 py-3.5 whitespace-nowrap text-center">
-                <div class="inline-flex items-center gap-2">
-                  <button 
-                    @click="openModalEdit(a)"
-                    class="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition"
-                    title="Edit Akun"
-                  >
-                    <Edit2 class="w-4 h-4" />
-                  </button>
-                  <button 
-                    @click="deleteAkun(a)"
-                    class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition"
-                    title="Hapus Akun"
-                  >
-                    <Trash2 class="w-4 h-4" />
-                  </button>
-                </div>
               </td>
             </tr>
           </tbody>
@@ -159,7 +89,33 @@
       </div>
       <div v-else-if="akuns.length === 0" class="text-center py-16 text-gray-500">
         <FolderTree class="w-10 h-10 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
-        <p class="font-bold">Belum ada akun pada kategori ini</p>
+        <p class="font-bold">Belum ada akun</p>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="!loading && akuns.length > 0" class="px-5 py-4 border-t border-gray-200 dark:border-gray-700/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+        <div>
+          Menampilkan <span class="font-semibold text-gray-900 dark:text-white">{{ (currentPage - 1) * perPage + 1 }}</span> - 
+          <span class="font-semibold text-gray-900 dark:text-white">{{ Math.min(currentPage * perPage, akuns.length) }}</span> dari 
+          <span class="font-semibold text-gray-900 dark:text-white">{{ akuns.length }}</span> akun
+        </div>
+        <div class="flex items-center gap-2" v-if="totalPages > 1">
+          <button 
+            @click="currentPage--" 
+            :disabled="currentPage === 1"
+            class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition text-xs font-semibold"
+          >
+            Sebelumnya
+          </button>
+          <span class="px-2 text-xs font-medium">Halaman {{ currentPage }} dari {{ totalPages }}</span>
+          <button 
+            @click="currentPage++" 
+            :disabled="currentPage >= totalPages"
+            class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition text-xs font-semibold"
+          >
+            Selanjutnya
+          </button>
+        </div>
       </div>
     </div>
 
@@ -275,7 +231,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import api from '@/services/api'
 import Swal from 'sweetalert2'
 import { FolderTree, Plus, Search, Edit2, Trash2, X } from 'lucide-vue-next'
@@ -289,6 +245,9 @@ const showModal = ref(false)
 const isEditing = ref(false)
 const editingId = ref(null)
 
+const currentPage = ref(1)
+const perPage = ref(25)
+
 const summary = ref({
   total: 0,
   aset: 0,
@@ -298,12 +257,14 @@ const summary = ref({
 
 const categoryTabs = [
   { label: 'Semua Akun', value: 'semua' },
-  { label: 'Aset', value: 'aset' },
-  { label: 'Kewajiban', value: 'kewajiban' },
-  { label: 'Ekuitas', value: 'ekuitas' },
-  { label: 'Pendapatan', value: 'pendapatan' },
-  { label: 'Beban', value: 'beban' },
 ]
+
+const totalPages = computed(() => Math.ceil(akuns.value.length / perPage.value) || 1)
+
+const paginatedAkuns = computed(() => {
+  const start = (currentPage.value - 1) * perPage.value
+  return akuns.value.slice(start, start + perPage.value)
+})
 
 const formAkun = ref({
   kode_akun: '',
@@ -337,6 +298,11 @@ const onKategoriModalChange = () => {
   } else {
     formAkun.value.saldo_normal = 'kredit'
   }
+}
+
+const onSearchInput = () => {
+  currentPage.value = 1
+  loadData()
 }
 
 const loadData = async () => {

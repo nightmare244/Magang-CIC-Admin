@@ -13,13 +13,12 @@ use App\Http\Controllers\Api\Admin\PersetujuanPeminjamanController;
 use App\Http\Controllers\Api\Admin\PengumumanAdminController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\AbsensiAdminController;
-use App\Http\Controllers\Api\Admin\PemasukanController;
-use App\Http\Controllers\Api\Admin\PengeluaranController;
+
 use App\Http\Controllers\Api\Admin\KeuanganController;
 use App\Http\Controllers\Api\Admin\RekapBulananController;
 use App\Http\Controllers\Api\Admin\LogAktivitasController;
 use App\Http\Controllers\Api\Admin\AkunController;
-use App\Http\Controllers\Api\Admin\TransaksiKeuanganController;
+
 use App\Http\Controllers\Api\Admin\LaporanKeuanganController;
 // Karyawan Controllers
 use App\Http\Controllers\Api\Karyawan\AbsensiController;
@@ -150,13 +149,14 @@ Route::middleware('auth:sanctum')->group(function () {
         // --- KEUANGAN ---
         Route::get('/keuangan/summary', [KeuanganController::class, 'summary']);
         Route::apiResource('akuns', AkunController::class);
-        Route::apiResource('keuangan/transaksi', TransaksiKeuanganController::class);
+        Route::get('/keuangan/akuns/search', [LaporanKeuanganController::class, 'searchAkun']);
         Route::get('/keuangan/jurnal-kas', [LaporanKeuanganController::class, 'jurnalKas']);
+        Route::post('/keuangan/jurnal-kas/transaksi', [LaporanKeuanganController::class, 'storeTransaksiKas']);
+        Route::put('/keuangan/jurnal-kas/transaksi/{jenis}/{id}', [LaporanKeuanganController::class, 'updateTransaksiKas']);
+        Route::delete('/keuangan/jurnal-kas/transaksi/{jenis}/{id}', [LaporanKeuanganController::class, 'deleteTransaksiKas']);
         Route::get('/keuangan/laporan/arus-kas', [LaporanKeuanganController::class, 'arusKas']);
         Route::get('/keuangan/laporan/laba-rugi', [LaporanKeuanganController::class, 'labaRugi']);
         Route::get('/keuangan/laporan/neraca', [LaporanKeuanganController::class, 'neraca']);
-        Route::apiResource('pemasukan', PemasukanController::class);
-        Route::apiResource('pengeluaran', PengeluaranController::class);
 
 
         // --- REKAP BULANAN ---

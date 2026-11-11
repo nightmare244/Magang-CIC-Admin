@@ -14,6 +14,7 @@ class Pemasukan extends Model
         'nama_pemasukan',
         'tipe',
         'jumlah',
+        'quantity',
         'nominal',
         'tanggal_pemasukan',
         'keterangan',
@@ -22,6 +23,7 @@ class Pemasukan extends Model
     protected $casts = [
         'nominal' => 'float',
         'jumlah' => 'integer',
+        'quantity' => 'float',
         'tanggal_pemasukan' => 'date:Y-m-d',
     ];
 

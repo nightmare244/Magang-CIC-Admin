@@ -18,17 +18,21 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
+        // Development
         'http://localhost:5173',
         'http://127.0.0.1:5173',
         'http://localhost:5174',
         'http://127.0.0.1:5174',
         'http://localhost:3000',
-        // Production
+        // Production (HTTPS only — kamera WAJIB HTTPS)
         'https://sima.ciwangunparkland.id',
-        'http://sima.ciwangunparkland.id',
+        'https://api-sima.ciwangunparkland.id',
     ],
 
-    'allowed_origins_patterns' => [],
+    // Izinkan semua origin yang match pola domain untuk Median.co WebView
+    'allowed_origins_patterns' => [
+        '#^https://.*\.ciwangunparkland\.id$#',
+    ],
 
     'allowed_headers' => ['*'],
 

@@ -8,101 +8,389 @@ use App\Models\Pemasukan;
 use App\Models\Pengeluaran;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Services\AktivitasLogger;
 
 class LaporanKeuanganController extends Controller
 {
     /**
-     * Get Jurnal Kas (Buku Kas Masuk & Keluar) with Running Balance.
+     * Get Jurnal Kas - Buku Kas Masuk & Keluar Kronologis dengan Saldo Berjalan.
+     * Kolom: Nomor Akun | Nama Akun | Quantity | Pemasukan (Rp) | Pengeluaran (Rp) | Saldo (Rp)
      */
     public function jurnalKas(Request $request)
     {
-        $bulan = $request->input('bulan', Carbon::now()->format('Y-m'));
-        $startDate = $request->input('tanggal_mulai');
-        $endDate = $request->input('tanggal_akhir');
+        $mode = $request->input('mode', 'bulanan'); // bulanan | tahunan | semua
 
-        if (!$startDate || !$endDate) {
-            $currentMonth = Carbon::createFromFormat('Y-m', $bulan)->startOfMonth();
-            $startDate = $currentMonth->copy()->startOfMonth()->toDateString();
-            $endDate = $currentMonth->copy()->endOfMonth()->toDateString();
+        // Master Saldo Awal Akun Kas (kategori 3 atau AUTO--241 atau 1-10001, jika belum ada default 0)
+        $kasAkun = Akun::where('nomor_kategori', 3)->first()
+            ?? Akun::where('nomor_akun', 'AUTO--241')->first()
+            ?? Akun::where('kode_akun', '1-10001')->first();
+        $saldoAwalMaster = $kasAkun ? (float) $kasAkun->saldo_awal : 0.0;
+
+        if ($mode === 'tahunan') {
+            $tahun = $request->input('tahun', Carbon::now()->format('Y'));
+            $startDate = Carbon::createFromDate($tahun, 1, 1)->startOfDay()->toDateString();
+            $endDate = Carbon::createFromDate($tahun, 12, 31)->endOfDay()->toDateString();
+            $periodeLabel = "Tahun " . $tahun;
+
+            $pemasukanSebelumnya = (float) Pemasukan::where('tanggal_pemasukan', '<', $startDate)->sum('nominal');
+            $pengeluaranSebelumnya = (float) Pengeluaran::where('tanggal_pengeluaran', '<', $startDate)->sum('nominal');
+            $saldoAwalPeriode = $saldoAwalMaster + $pemasukanSebelumnya - $pengeluaranSebelumnya;
+        } elseif ($mode === 'semua') {
+            $startDate = null;
+            $endDate = null;
+            $periodeLabel = "Semua Waktu";
+
+            $saldoAwalPeriode = $saldoAwalMaster;
         } else {
-            $currentMonth = Carbon::parse($startDate)->startOfMonth();
+            // Default: bulanan
+            $mode = 'bulanan';
+            $bulan = $request->input('bulan', Carbon::now()->format('Y-m'));
+            $startDate = $request->input('tanggal_mulai');
+            $endDate = $request->input('tanggal_akhir');
+
+            if (!$startDate || !$endDate) {
+                $currentMonth = Carbon::createFromFormat('Y-m', $bulan)->startOfMonth();
+                $startDate = $currentMonth->copy()->startOfMonth()->toDateString();
+                $endDate = $currentMonth->copy()->endOfMonth()->toDateString();
+                $periodeLabel = $currentMonth->translatedFormat('F Y');
+            } else {
+                $currentMonth = Carbon::parse($startDate)->startOfMonth();
+                $periodeLabel = $currentMonth->translatedFormat('F Y');
+            }
+
+            $pemasukanSebelumnya = (float) Pemasukan::where('tanggal_pemasukan', '<', $startDate)->sum('nominal');
+            $pengeluaranSebelumnya = (float) Pengeluaran::where('tanggal_pengeluaran', '<', $startDate)->sum('nominal');
+            $saldoAwalPeriode = $saldoAwalMaster + $pemasukanSebelumnya - $pengeluaranSebelumnya;
         }
 
-        // 1. Calculate Initial Cash Balance before $startDate
-        $kasAkun = Akun::where('kategori', 'aset')->where('kode_akun', '1-10001')->first();
-        $saldoAwalMaster = $kasAkun ? (float) $kasAkun->saldo_awal : 0;
+        // Query Pemasukan & Pengeluaran
+        $pemasukanQuery = Pemasukan::with('akun');
+        $pengeluaranQuery = Pengeluaran::with('akun');
 
-        $pemasukanSebelumnya = (float) Pemasukan::where('tanggal_pemasukan', '<', $startDate)->sum('nominal');
-        $pengeluaranSebelumnya = (float) Pengeluaran::where('tanggal_pengeluaran', '<', $startDate)->sum('nominal');
-        $saldoAwalPeriode = $saldoAwalMaster + $pemasukanSebelumnya - $pengeluaranSebelumnya;
+        if ($startDate && $endDate) {
+            $pemasukanQuery->whereBetween('tanggal_pemasukan', [$startDate, $endDate]);
+            $pengeluaranQuery->whereBetween('tanggal_pengeluaran', [$startDate, $endDate]);
+        }
 
-        // 2. Fetch Pemasukan in period
-        $pemasukans = Pemasukan::with('akun')
-            ->whereBetween('tanggal_pemasukan', [$startDate, $endDate])
-            ->get()
-            ->map(function ($p) {
-                return [
-                    'id'          => 'in_' . $p->id,
-                    'tanggal'     => Carbon::parse($p->tanggal_pemasukan)->format('Y-m-d'),
-                    'no_bukti'    => 'BKM-' . Carbon::parse($p->tanggal_pemasukan)->format('ym') . '-' . str_pad($p->id, 4, '0', STR_PAD_LEFT),
-                    'uraian'      => $p->nama_pemasukan . ($p->keterangan ? ' (' . $p->keterangan . ')' : ''),
-                    'akun_lawan'  => $p->akun ? $p->akun->kode_akun . ' - ' . $p->akun->nama_akun : 'Pendapatan',
-                    'tipe'        => 'masuk',
-                    'debit'       => (float) $p->nominal,
-                    'kredit'      => 0.0,
-                    'created_at'  => $p->created_at,
-                ];
-            });
+        $pemasukans = $pemasukanQuery->get()->map(function ($item) {
+            $nomorAkun = $item->akun?->nomor_akun ?? ($item->akun?->kode_akun ?? '-');
+            return [
+                'id'             => $item->id,
+                'tipe_transaksi' => 'pemasukan',
+                'tanggal'        => $item->tanggal_pemasukan ? Carbon::parse($item->tanggal_pemasukan)->format('Y-m-d') : null,
+                'created_at'     => $item->created_at ? $item->created_at->toISOString() : null,
+                'akun_id'        => $item->akun_id,
+                'nomor_akun'     => $item->akun_id ? $nomorAkun : '-',
+                'nama_akun'      => $item->akun ? $item->akun->nama_akun : ($item->nama_pemasukan ?? 'Pemasukan Kas'),
+                'is_unmapped'    => empty($item->akun_id),
+                'nomor_kategori' => $item->akun?->nomor_kategori,
+                'nama_kategori'  => $item->akun?->nama_kategori,
+                'quantity'       => (float) ($item->quantity ?? ($item->jumlah ?? 1.0)),
+                'pemasukan'      => (float) $item->nominal,
+                'pengeluaran'    => 0.0,
+                'keterangan'     => $item->keterangan,
+            ];
+        });
 
-        // 3. Fetch Pengeluaran in period
-        $pengeluarans = Pengeluaran::with('akun')
-            ->whereBetween('tanggal_pengeluaran', [$startDate, $endDate])
-            ->get()
-            ->map(function ($p) {
-                return [
-                    'id'          => 'out_' . $p->id,
-                    'tanggal'     => Carbon::parse($p->tanggal_pengeluaran)->format('Y-m-d'),
-                    'no_bukti'    => 'BKK-' . Carbon::parse($p->tanggal_pengeluaran)->format('ym') . '-' . str_pad($p->id, 4, '0', STR_PAD_LEFT),
-                    'uraian'      => $p->nama_pengeluaran . ($p->keterangan ? ' (' . $p->keterangan . ')' : ''),
-                    'akun_lawan'  => $p->akun ? $p->akun->kode_akun . ' - ' . $p->akun->nama_akun : 'Beban Operasional',
-                    'tipe'        => 'keluar',
-                    'debit'       => 0.0,
-                    'kredit'      => (float) $p->nominal,
-                    'created_at'  => $p->created_at,
-                ];
-            });
+        $pengeluarans = $pengeluaranQuery->get()->map(function ($item) {
+            $nomorAkun = $item->akun?->nomor_akun ?? ($item->akun?->kode_akun ?? '-');
+            return [
+                'id'             => $item->id,
+                'tipe_transaksi' => 'pengeluaran',
+                'tanggal'        => $item->tanggal_pengeluaran ? Carbon::parse($item->tanggal_pengeluaran)->format('Y-m-d') : null,
+                'created_at'     => $item->created_at ? $item->created_at->toISOString() : null,
+                'akun_id'        => $item->akun_id,
+                'nomor_akun'     => $item->akun_id ? $nomorAkun : '-',
+                'nama_akun'      => $item->akun ? $item->akun->nama_akun : ($item->nama_pengeluaran ?? 'Pengeluaran Kas'),
+                'is_unmapped'    => empty($item->akun_id),
+                'nomor_kategori' => $item->akun?->nomor_kategori,
+                'nama_kategori'  => $item->akun?->nama_kategori,
+                'quantity'       => (float) ($item->quantity ?? 1.0),
+                'pemasukan'      => 0.0,
+                'pengeluaran'    => (float) $item->nominal,
+                'keterangan'     => $item->keterangan,
+            ];
+        });
 
-        // 4. Combine and Sort Chronologically (oldest to newest for running balance)
-        $allEntries = $pemasukans->concat($pengeluarans)->sortBy(function ($item) {
-            return $item['tanggal'] . '_' . ($item['created_at'] ?? '');
+        // Gabungkan dan urutkan kronologis: tanggal ASC, id ASC
+        $allEntries = $pemasukans->concat($pengeluarans)->sort(function ($a, $b) {
+            $dateA = $a['tanggal'] ?? '';
+            $dateB = $b['tanggal'] ?? '';
+            if ($dateA !== $dateB) {
+                return strcmp($dateA, $dateB);
+            }
+            return $a['id'] <=> $b['id'];
         })->values();
 
+        // Hitung Saldo Berjalan (Running Balance)
         $runningBalance = $saldoAwalPeriode;
-        $totalDebit = 0;
-        $totalKredit = 0;
+        $totalDebitPeriode = 0.0;
+        $totalKreditPeriode = 0.0;
 
-        $jurnalEntries = $allEntries->map(function ($entry) use (&$runningBalance, &$totalDebit, &$totalKredit) {
-            $totalDebit += $entry['debit'];
-            $totalKredit += $entry['kredit'];
-            $runningBalance += ($entry['debit'] - $entry['kredit']);
-
-            $entry['saldo_berjalan'] = $runningBalance;
+        $entries = $allEntries->map(function ($entry) use (&$runningBalance, &$totalDebitPeriode, &$totalKreditPeriode) {
+            $runningBalance += $entry['pemasukan'] - $entry['pengeluaran'];
+            $totalDebitPeriode += $entry['pemasukan'];
+            $totalKreditPeriode += $entry['pengeluaran'];
+            $entry['saldo'] = (float) $runningBalance;
             return $entry;
         });
 
         return response()->json([
             'success' => true,
             'data' => [
-                'periode'            => $currentMonth->translatedFormat('F Y'),
-                'tanggal_mulai'      => $startDate,
-                'tanggal_akhir'      => $endDate,
-                'saldo_awal_periode' => (float) $saldoAwalPeriode,
-                'total_debit'        => (float) $totalDebit,
-                'total_kredit'       => (float) $totalKredit,
-                'saldo_akhir_periode'=> (float) $runningBalance,
-                'entries'            => $jurnalEntries,
+                'mode'                => $mode,
+                'periode'             => $periodeLabel,
+                'tanggal_mulai'       => $startDate,
+                'tanggal_akhir'       => $endDate,
+                'saldo_awal_periode'  => (float) $saldoAwalPeriode,
+                'total_debit'         => (float) $totalDebitPeriode,
+                'total_kredit'        => (float) $totalKreditPeriode,
+                'saldo_akhir_periode' => (float) $runningBalance,
+                'entries'             => $entries,
             ]
         ]);
+    }
+
+    /**
+     * Typeahead Pencarian Akun untuk Jurnal Kas.
+     * Mencari berdasarkan nomor_akun / nama_akun / kode_akun, limit 10.
+     * Akun kategori 3 (Kas & Bank) dikecualikan.
+     * Exact match pada nomor_akun diurutkan paling atas.
+     */
+    public function searchAkun(Request $request)
+    {
+        $q = trim($request->input('q', ''));
+        if ($q === '') {
+            return response()->json(['success' => true, 'data' => []]);
+        }
+
+        $query = Akun::active()
+            ->where(function ($sub) {
+                $sub->where('nomor_kategori', '!=', 3)
+                    ->orWhereNull('nomor_kategori');
+            })
+            ->where('kode_akun', '!=', '1-10001')
+            ->where(function ($sub) use ($q) {
+                $sub->where('nomor_akun', 'like', "%{$q}%")
+                    ->orWhere('nama_akun', 'like', "%{$q}%")
+                    ->orWhere('kode_akun', 'like', "%{$q}%");
+            });
+
+        // Exact match pada nomor_akun mendapat prioritas paling atas
+        $escaped = addslashes($q);
+        $akuns = $query->orderByRaw("CASE WHEN nomor_akun = '{$escaped}' THEN 0 ELSE 1 END")
+            ->orderBy('nomor_akun', 'asc')
+            ->limit(10)
+            ->get();
+
+        $results = $akuns->map(function ($a) {
+            $nomor = $a->nomor_akun ?? $a->kode_akun;
+            $kategori = $a->nama_kategori ?? ucfirst($a->kategori ?? 'Akun');
+            return [
+                'id'             => $a->id,
+                'nomor_akun'     => $nomor,
+                'nama_akun'      => $a->nama_akun,
+                'nomor_kategori' => $a->nomor_kategori,
+                'nama_kategori'  => $kategori,
+                'label'          => "{$nomor} - {$a->nama_akun} - {$kategori}",
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data'    => $results,
+        ]);
+    }
+
+    /**
+     * Simpan transaksi baru dari baris input Jurnal Kas.
+     */
+    public function storeTransaksiKas(Request $request)
+    {
+        $validated = $request->validate([
+            'jenis'      => 'required|string|in:pemasukan,pengeluaran',
+            'akun_id'    => 'required|exists:akuns,id',
+            'nominal'    => 'required|numeric|min:0.01',
+            'quantity'   => 'nullable|numeric|min:0.01',
+            'tanggal'    => 'required|date',
+            'keterangan' => 'nullable|string|max:500',
+        ]);
+
+        $akun = Akun::findOrFail($validated['akun_id']);
+        if ($akun->nomor_kategori === 3) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Kas & Bank tidak boleh dipilih sebagai akun lawan transaksi.',
+            ], 422);
+        }
+
+        $quantity = (float) ($validated['quantity'] ?? 1.0);
+        $nominal  = (float) $validated['nominal'];
+        $tanggal  = $validated['tanggal'];
+        $ket      = $validated['keterangan'] ?? null;
+
+        if ($validated['jenis'] === 'pemasukan') {
+            $pemasukan = Pemasukan::create([
+                'akun_id'           => $akun->id,
+                'nama_pemasukan'    => $akun->nama_akun,
+                'tipe'              => 'lainnya',
+                'jumlah'            => max(1, (int) round($quantity)),
+                'quantity'          => $quantity,
+                'nominal'           => $nominal,
+                'tanggal_pemasukan' => $tanggal,
+                'keterangan'        => $ket,
+            ]);
+
+            AktivitasLogger::created(
+                'pemasukan',
+                'Menambahkan pemasukan kas',
+                $akun->nama_akun . ' - Rp ' . number_format($nominal, 0, ',', '.'),
+                $pemasukan
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi pemasukan kas berhasil disimpan',
+                'data'    => $pemasukan,
+            ], 201);
+        } else {
+            $pengeluaran = Pengeluaran::create([
+                'akun_id'             => $akun->id,
+                'nama_pengeluaran'    => $akun->nama_akun,
+                'kategori'            => 'operasional',
+                'quantity'            => $quantity,
+                'nominal'             => $nominal,
+                'tanggal_pengeluaran' => $tanggal,
+                'keterangan'          => $ket,
+            ]);
+
+            AktivitasLogger::created(
+                'pengeluaran',
+                'Menambahkan pengeluaran kas',
+                $akun->nama_akun . ' - Rp ' . number_format($nominal, 0, ',', '.'),
+                $pengeluaran
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi pengeluaran kas berhasil disimpan',
+                'data'    => $pengeluaran,
+            ], 201);
+        }
+    }
+
+    /**
+     * Update transaksi kas yang ada.
+     */
+    public function updateTransaksiKas(Request $request, $jenis, $id)
+    {
+        if (!in_array($jenis, ['pemasukan', 'pengeluaran'])) {
+            return response()->json(['success' => false, 'message' => 'Jenis transaksi tidak valid'], 400);
+        }
+
+        $validated = $request->validate([
+            'akun_id'    => 'required|exists:akuns,id',
+            'nominal'    => 'required|numeric|min:0.01',
+            'quantity'   => 'nullable|numeric|min:0.01',
+            'tanggal'    => 'required|date',
+            'keterangan' => 'nullable|string|max:500',
+        ]);
+
+        $akun = Akun::findOrFail($validated['akun_id']);
+        if ($akun->nomor_kategori === 3) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Kas & Bank tidak boleh dipilih sebagai akun lawan transaksi.',
+            ], 422);
+        }
+
+        $quantity = (float) ($validated['quantity'] ?? 1.0);
+        $nominal  = (float) $validated['nominal'];
+        $tanggal  = $validated['tanggal'];
+        $ket      = $validated['keterangan'] ?? null;
+
+        if ($jenis === 'pemasukan') {
+            $item = Pemasukan::findOrFail($id);
+            $item->update([
+                'akun_id'           => $akun->id,
+                'nama_pemasukan'    => $akun->nama_akun,
+                'jumlah'            => max(1, (int) round($quantity)),
+                'quantity'          => $quantity,
+                'nominal'           => $nominal,
+                'tanggal_pemasukan' => $tanggal,
+                'keterangan'        => $ket,
+            ]);
+
+            AktivitasLogger::updated(
+                'pemasukan',
+                'Memperbarui pemasukan kas',
+                $akun->nama_akun . ' - Rp ' . number_format($nominal, 0, ',', '.'),
+                $item
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi pemasukan berhasil diperbarui',
+                'data'    => $item,
+            ]);
+        } else {
+            $item = Pengeluaran::findOrFail($id);
+            $item->update([
+                'akun_id'             => $akun->id,
+                'nama_pengeluaran'    => $akun->nama_akun,
+                'quantity'            => $quantity,
+                'nominal'             => $nominal,
+                'tanggal_pengeluaran' => $tanggal,
+                'keterangan'          => $ket,
+            ]);
+
+            AktivitasLogger::updated(
+                'pengeluaran',
+                'Memperbarui pengeluaran kas',
+                $akun->nama_akun . ' - Rp ' . number_format($nominal, 0, ',', '.'),
+                $item
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi pengeluaran berhasil diperbarui',
+                'data'    => $item,
+            ]);
+        }
+    }
+
+    /**
+     * Hapus transaksi kas.
+     */
+    public function deleteTransaksiKas(Request $request, $jenis, $id)
+    {
+        if (!in_array($jenis, ['pemasukan', 'pengeluaran'])) {
+            return response()->json(['success' => false, 'message' => 'Jenis transaksi tidak valid'], 400);
+        }
+
+        if ($jenis === 'pemasukan') {
+            $item = Pemasukan::findOrFail($id);
+            $detail = ($item->akun?->nama_akun ?? $item->nama_pemasukan) . ' - Rp ' . number_format($item->nominal, 0, ',', '.');
+            $item->delete();
+
+            AktivitasLogger::deleted('pemasukan', 'Menghapus transaksi pemasukan kas', $detail, $item);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi pemasukan berhasil dihapus',
+            ]);
+        } else {
+            $item = Pengeluaran::findOrFail($id);
+            $detail = ($item->akun?->nama_akun ?? $item->nama_pengeluaran) . ' - Rp ' . number_format($item->nominal, 0, ',', '.');
+            $item->delete();
+
+            AktivitasLogger::deleted('pengeluaran', 'Menghapus transaksi pengeluaran kas', $detail, $item);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaksi pengeluaran berhasil dihapus',
+            ]);
+        }
     }
 
     /**

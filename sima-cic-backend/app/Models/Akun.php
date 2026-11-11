@@ -11,7 +11,11 @@ class Akun extends Model
 
     protected $fillable = [
         'kode_akun',
+        'nomor_akun',
         'nama_akun',
+        'deskripsi',
+        'nomor_kategori',
+        'nama_kategori',
         'kategori',
         'saldo_normal',
         'saldo_awal',
@@ -21,6 +25,7 @@ class Akun extends Model
 
     protected $casts = [
         'saldo_awal' => 'float',
+        'nomor_kategori' => 'integer',
         'is_active' => 'boolean',
     ];
 

@@ -51,9 +51,15 @@
               </div>
             </qrcode-stream>
 
-            <div v-if="cameraFailed" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 p-8 text-center">
-              <AlertCircle class="w-10 h-10 text-rose-500 mb-3" />
+            <div v-if="cameraFailed" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 p-6 text-center gap-3">
+              <AlertCircle class="w-10 h-10 text-rose-500" />
               <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">gagal memuat kamera</p>
+              <p v-if="cameraErrorMessage" class="text-[10px] text-slate-500 leading-relaxed">{{ cameraErrorMessage }}</p>
+              <button 
+                v-if="showRetryButton"
+                @click="retryCameraWithFallback"
+                class="mt-1 px-4 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl active:scale-95 transition-all"
+              >Coba Kamera Depan</button>
             </div>
           </div>
 
@@ -130,7 +136,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { QrcodeStream } from "vue-qrcode-reader";
 import api from "@/services/api";
 import Swal from 'sweetalert2';
@@ -141,13 +147,33 @@ import {
 
 const step = ref('scan');
 const cameraFailed = ref(false);
+const cameraErrorMessage = ref('');
+const showRetryButton = ref(false);
 const qrCodeManual = ref('');
 const apiResult = ref(null);
 const processingText = ref('');
 const isProcessing = ref(false);
 const facingMode = ref('environment');
 
+// Cek apakah halaman berjalan di Secure Context (HTTPS/localhost)
+// Kamera hanya bisa diakses di HTTPS — ini syarat wajib browser modern
+onMounted(() => {
+  if (!window.isSecureContext) {
+    cameraFailed.value = true;
+    cameraErrorMessage.value = 'Kamera membutuhkan koneksi HTTPS. Hubungi administrator sistem.';
+    showRetryButton.value = false;
+  }
+});
+
 const toggleCamera = () => { facingMode.value = facingMode.value === 'environment' ? 'user' : 'environment'; };
+
+// Fallback: coba gunakan kamera depan jika kamera belakang gagal
+const retryCameraWithFallback = () => {
+  cameraFailed.value = false;
+  cameraErrorMessage.value = '';
+  showRetryButton.value = false;
+  facingMode.value = 'user';
+};
 
 const onDetect = async (detectedCodes) => {
   if (isProcessing.value || !detectedCodes.length) return;
@@ -159,7 +185,34 @@ const onDetect = async (detectedCodes) => {
   }
 };
 
-const onCameraError = () => { cameraFailed.value = true; };
+// Handler error kamera yang informatif dengan auto-fallback
+const onCameraError = (error) => {
+  console.error('[Camera Error]', error?.name, error?.message);
+  const name = error?.name || 'UnknownError';
+
+  // OverconstrainedError: kamera belakang tidak tersedia, coba kamera depan
+  if (name === 'OverconstrainedError' && facingMode.value === 'environment') {
+    showRetryButton.value = true;
+    cameraFailed.value = true;
+    cameraErrorMessage.value = 'Kamera belakang tidak ditemukan.';
+    return;
+  }
+
+  cameraFailed.value = true;
+  showRetryButton.value = false;
+
+  if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+    cameraErrorMessage.value = 'Izin kamera ditolak. Buka Pengaturan browser/app dan izinkan akses kamera.';
+  } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+    cameraErrorMessage.value = 'Tidak ada kamera yang terdeteksi di perangkat ini.';
+  } else if (name === 'NotSupportedError') {
+    cameraErrorMessage.value = 'Kamera membutuhkan koneksi HTTPS. Hubungi administrator.';
+  } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+    cameraErrorMessage.value = 'Kamera sedang digunakan oleh aplikasi lain. Tutup aplikasi lain dan coba lagi.';
+  } else {
+    cameraErrorMessage.value = 'Gagal memuat kamera. Gunakan kode akses manual di bawah.';
+  }
+};
 
 const handleManualInput = () => {
   if (!qrCodeManual.value.trim() || isProcessing.value) return;

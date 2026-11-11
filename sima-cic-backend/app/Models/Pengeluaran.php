@@ -13,6 +13,7 @@ class Pengeluaran extends Model
         'akun_id',
         'nama_pengeluaran',
         'kategori',
+        'quantity',
         'nominal',
         'tanggal_pengeluaran',
         'keterangan',
@@ -20,6 +21,7 @@ class Pengeluaran extends Model
 
     protected $casts = [
         'nominal' => 'float',
+        'quantity' => 'float',
         'tanggal_pengeluaran' => 'date:Y-m-d',
     ];
 
