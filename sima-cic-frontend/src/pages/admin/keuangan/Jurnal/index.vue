@@ -261,7 +261,6 @@
               <th class="px-5 py-3.5 text-right bg-emerald-50/40 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400">Pemasukan (Rp)</th>
               <th class="px-5 py-3.5 text-right bg-rose-50/40 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400">Pengeluaran (Rp)</th>
               <th class="px-5 py-3.5 text-right bg-blue-50/30 dark:bg-blue-950/20 text-blue-800 dark:text-blue-300">Saldo (Rp)</th>
-              <th class="px-4 py-3.5 text-center w-24">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-700/60 text-xs sm:text-sm">
@@ -288,8 +287,6 @@
               <td class="px-5 py-3.5 text-right font-mono font-black text-gray-900 dark:text-white bg-blue-50/20 dark:bg-blue-950/10">
                 Rp {{ formatCurrency(jurnalData.saldo_awal_periode) }}
               </td>
-              <!-- Aksi -->
-              <td class="px-4 py-3.5 text-center text-gray-400">-</td>
             </tr>
 
             <!-- 2. BARIS TRANSAKSI KAS KRONOLOGIS -->
@@ -346,26 +343,6 @@
               <td class="px-5 py-3.5 text-right font-mono font-bold whitespace-nowrap bg-blue-50/20 dark:bg-blue-950/10 text-gray-900 dark:text-white">
                 Rp {{ formatTotal(row.saldo) }}
               </td>
-
-              <!-- 7. Aksi (Edit & Hapus) -->
-              <td class="px-4 py-3.5 text-center whitespace-nowrap">
-                <div class="inline-flex items-center gap-1.5 opacity-90 group-hover:opacity-100">
-                  <button 
-                    @click="openModalEdit(row)" 
-                    class="p-1 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition"
-                    title="Edit Transaksi"
-                  >
-                    <Edit2 class="w-3.5 h-3.5" />
-                  </button>
-                  <button 
-                    @click="hapusBaris(row)" 
-                    class="p-1 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition"
-                    title="Hapus Transaksi"
-                  >
-                    <Trash2 class="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </td>
             </tr>
           </tbody>
 
@@ -384,7 +361,6 @@
               <td class="px-5 py-4 text-right font-mono text-blue-700 dark:text-blue-300 font-black bg-blue-100/50 dark:bg-blue-900/30">
                 Rp {{ formatTotal(jurnalData.saldo_akhir_periode) }}
               </td>
-              <td class="px-4 py-4 text-center text-gray-400 dark:text-gray-500">-</td>
             </tr>
           </tfoot>
         </table>
